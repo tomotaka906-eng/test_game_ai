@@ -138,7 +138,7 @@ class App {
     }
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('menuScreen').classList.add('active');
-    document.getElementById('gameOverlay').querySelectorAll('> div').forEach(d => d.classList.add('hidden'));
+    document.getElementById('gameOverlay').querySelectorAll(':scope > div').forEach(d => d.classList.add('hidden'));
     this.loadLeaderboard();
   }
 
