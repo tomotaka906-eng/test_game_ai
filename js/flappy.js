@@ -25,6 +25,7 @@ class FlappyGame {
     this.gameOver = false;
     this.started = false;
     this.pipeTimer = 0;
+    this.lastPipeTime = 0;
     this.pipeGap = 140;
     this.pipeWidth = 48;
     this.pipeSpeed = 3;
@@ -102,12 +103,12 @@ class FlappyGame {
 
   loop(timestamp) {
     if (!this.running) return;
-    this.update();
+    this.update(timestamp);
     this.render();
     this.animId = requestAnimationFrame((t) => this.loop(t));
   }
 
-  update() {
+  update(ts) {
     if (this.gameOver) return;
     this.frame++;
 
@@ -116,9 +117,10 @@ class FlappyGame {
       this.bird.y += this.bird.vy;
       this.bird.rotation = Math.min(Math.PI * 0.4, Math.max(-Math.PI * 0.3, this.bird.vy * 0.04));
 
-      this.pipeTimer++;
-      if (this.pipeTimer > 80) {
-        this.pipeTimer = 0;
+      if (!this.lastPipeTime) this.lastPipeTime = ts;
+      const pipeDt = ts - this.lastPipeTime;
+      if (pipeDt >= 1500 + Math.random() * 400) {
+        this.lastPipeTime = ts;
         this.spawnPipe();
       }
 

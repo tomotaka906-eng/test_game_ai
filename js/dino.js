@@ -24,8 +24,9 @@ class DinoGame {
     this.gameOver = false;
     this.started = false;
     this.spawnTimer = 0;
-    this.minSpawnGap = 60;
+    this.minSpawnGap = 80;
     this.frame = 0;
+    this.lastSpawnTime = 0;
   }
 
   start() {
@@ -138,12 +139,12 @@ class DinoGame {
 
   loop(timestamp) {
     if (!this.running) return;
-    this.update();
+    this.update(timestamp);
     this.render();
     this.animId = requestAnimationFrame((t) => this.loop(t));
   }
 
-  update() {
+  update(ts) {
     if (this.gameOver || !this.started) return;
 
     this.frame++;
@@ -178,10 +179,11 @@ class DinoGame {
       }
     });
 
-    this.spawnTimer++;
-    const gap = Math.max(30, this.minSpawnGap - Math.floor(this.speed * 2));
-    if (this.spawnTimer >= gap) {
-      this.spawnTimer = 0;
+    if (!this.lastSpawnTime) this.lastSpawnTime = ts;
+    const spawnDt = ts - this.lastSpawnTime;
+    const gapMs = Math.max(700, (this.minSpawnGap - Math.floor(this.speed * 2)) * 16.67);
+    if (spawnDt >= gapMs + Math.random() * 300) {
+      this.lastSpawnTime = ts;
       this.spawnObstacle();
     }
 
