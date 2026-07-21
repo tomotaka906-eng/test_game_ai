@@ -70,17 +70,6 @@ class App {
   setupMenu() {
     document.querySelectorAll('.game-card').forEach(card => {
       card.addEventListener('click', () => this.startGame(card.dataset.game));
-      let touchStartY = 0;
-      card.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-        e.preventDefault();
-      }, { passive: false });
-      card.addEventListener('touchend', (e) => {
-        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        if (dy < 10) {
-          this.startGame(card.dataset.game);
-        }
-      });
     });
 
   setupStartMessage() {
@@ -91,7 +80,6 @@ class App {
       }
     };
     msg.addEventListener('click', handler);
-    msg.addEventListener('touchstart', (e) => { e.preventDefault(); handler(); }, { passive: false });
   }
 
   setupBackButton() {
