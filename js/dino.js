@@ -421,3 +421,7 @@ class DinoGame {
     ctx.fillText(`${this.displayScore}`, W - 8, 42);
   }
 }
+// Export for Node-based unit tests; harmless in the browser (no `module` global there).
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = DinoGame;
+}

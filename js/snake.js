@@ -189,3 +189,8 @@ class SnakeGame {
     }
   }
 }
+
+// Export for Node-based unit tests; harmless in the browser (no `module` global there).
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = SnakeGame;
+}

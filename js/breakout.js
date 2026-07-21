@@ -250,3 +250,7 @@ class BreakoutGame {
     ctx.fillText(`HI ${this.highScore}`, this.W - 8, 22);
   }
 }
+// Export for Node-based unit tests; harmless in the browser (no `module` global there).
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = BreakoutGame;
+}
