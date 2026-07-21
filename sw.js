@@ -8,6 +8,8 @@ const ASSETS = [
   'js/flappy.js',
   'js/cave.js',
   'js/tetris.js',
+  'js/firebase-config.js',
+  'js/firebase-db.js',
   'manifest.json',
   'assets/icon.svg',
   'assets/icon-192.png',

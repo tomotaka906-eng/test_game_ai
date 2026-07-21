@@ -228,6 +228,88 @@ header h1 {
   transform: scale(0.95);
 }
 
+/* Name Input */
+.name-input {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  padding: 10px 14px;
+  background: #0a0a1a;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1em;
+  text-align: center;
+  outline: none;
+  pointer-events: auto;
+}
+.name-input:focus {
+  border-color: #e94560;
+}
+
+#nameOverlay {
+  pointer-events: auto;
+}
+
+/* Leaderboard */
+.lb-container {
+  margin-top: 20px;
+  padding: 16px;
+  background: #16213e;
+  border: 2px solid #0f3460;
+  border-radius: 16px;
+}
+
+.lb-empty {
+  text-align: center;
+  color: #666;
+  font-size: 0.85em;
+  padding: 12px;
+}
+
+.lb-section {
+  margin-bottom: 12px;
+}
+.lb-section:last-child {
+  margin-bottom: 0;
+}
+
+.lb-title {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #e94560;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #0f3460;
+}
+
+.lb-row {
+  display: flex;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 0.8em;
+}
+
+.lb-rank {
+  width: 20px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.lb-name {
+  flex: 1;
+  color: #ddd;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-score {
+  color: #ffd700;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (min-width: 600px) {
   .game-cards {
     flex-direction: row;
