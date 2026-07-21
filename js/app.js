@@ -17,6 +17,7 @@ class App {
     this.setupRestartButton();
     this.setupStartMessage();
     this.setupNameSubmit();
+    this.setupUpdateBtn();
     this.setupDpad();
     this.resizeCanvas();
     this.loadLeaderboard();
@@ -53,12 +54,18 @@ class App {
   setupMenu() {
     document.querySelectorAll('.game-card').forEach(card => {
       card.addEventListener('click', () => this.startGame(card.dataset.game));
+      let touchY = 0;
+      card.addEventListener('touchstart', (e) => {
+        touchY = e.touches[0].clientY;
+      }, { passive: true });
       card.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        this.startGame(card.dataset.game);
+        const dy = Math.abs(e.changedTouches[0].clientY - touchY);
+        if (dy < 10) {
+          e.preventDefault();
+          this.startGame(card.dataset.game);
+        }
       });
     });
-  }
 
   setupStartMessage() {
     const msg = document.getElementById('startMsg');
@@ -205,6 +212,20 @@ class App {
       };
       btn.addEventListener('touchstart', handler, { passive: false });
       btn.addEventListener('mousedown', handler);
+    });
+  }
+
+  setupUpdateBtn() {
+    document.getElementById('updateBtn').addEventListener('click', () => {
+      if ('serviceWorker' in navigator) {
+        caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).then(() => {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(r => r.unregister());
+          }).then(() => location.reload(true));
+        });
+      } else {
+        location.reload();
+      }
     });
   }
 
