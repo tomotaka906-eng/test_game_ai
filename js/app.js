@@ -136,7 +136,7 @@ class App {
     this.showStartMessage();
     this.updateControlsHint(name);
     this.updateDpad(name);
-    this.games[name].start();
+    try { this.games[name].start(); } catch(e) { alert('Error: ' + e.message); }
   }
 
   restartGame() {

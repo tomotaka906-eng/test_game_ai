@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mgc-v2';
+const CACHE_NAME = 'mgc-v3';
 const ASSETS = [
   '.',
   'index.html',
