@@ -1,9 +1,10 @@
-const CACHE_NAME = 'mgc-v5';
+const CACHE_NAME = 'mgc-v6';
 const ASSETS = [
   '.',
   'index.html',
   'css/style.css',
   'js/app.js',
+  'js/main.js',
   'js/dino.js',
   'js/flappy.js',
   'js/cave.js',
