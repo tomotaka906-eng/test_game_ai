@@ -93,8 +93,8 @@ class BreakoutGame {
       if (!this.started) {
         if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); this.startGame(); return; }
       }
-      if (e.code === 'ArrowLeft') { this.paddle.dx = -6; }
-      if (e.code === 'ArrowRight') { this.paddle.dx = 6; }
+      if (e.code === 'ArrowLeft') { this.mouseX = null; this.paddle.dx = -6; }
+      if (e.code === 'ArrowRight') { this.mouseX = null; this.paddle.dx = 6; }
     };
     this._onKeyUp = (e) => {
       if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') this.paddle.dx = 0;
@@ -109,6 +109,7 @@ class BreakoutGame {
       if (this.gameOver) return;
       const touch = e.touches ? e.touches[0] : e;
       if (!this.started) { this.startGame(); return; }
+      this.paddle.dx = 0;
       const rect = this.canvas.getBoundingClientRect();
       const scaleX = this.canvas.width / rect.width;
       this.mouseX = (touch.clientX - rect.left) * scaleX;
@@ -142,7 +143,6 @@ class BreakoutGame {
     if (this.gameOver || !this.started) return;
     if (this.mouseX !== null) {
       this.paddle.x = this.mouseX - this.paddle.w / 2;
-      this.mouseX = null;
     }
     if (this.paddle.dx) {
       this.paddle.x += this.paddle.dx;

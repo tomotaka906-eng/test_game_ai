@@ -273,47 +273,40 @@ class TetrisGame {
         case 'Space':      e.preventDefault(); this.hardDrop(); break;
       }
     };
-    this._onTouch = (e) => {
+    this._onTouchStart = (e) => {
       e.preventDefault();
       if (this.gameOver) return;
-      const touch = e.touches ? e.touches[0] : e;
+      const touch = e.touches[0];
       if (!this.started) { this.startGame(); return; }
-      if (!this._touchStartX) {
-        this._touchStartX = touch.clientX;
-        this._touchStartY = touch.clientY;
-        this._touchTime = Date.now();
-        return;
-      }
-      const dx = touch.clientX - this._touchStartX;
-      const dy = touch.clientY - this._touchStartY;
-      if (Date.now() - this._touchTime > 300 && Math.abs(dy) > 30) {
-        this.hardDrop();
-      } else if (Math.abs(dx) > 30) {
-        if (dx > 0) this.moveRight();
-        else this.moveLeft();
-      } else if (Math.abs(dy) > 30) {
-        if (dy > 0) this.hardDrop();
-      } else {
-        this.rotatePiece();
-      }
-      this._touchStartX = touch.clientX;
-      this._touchStartY = touch.clientY;
-      this._touchTime = Date.now();
+      this._touchStart = { x: touch.clientX, y: touch.clientY, t: Date.now() };
     };
-    this._onTouchEnd = () => { this._touchStartX = null; this._touchStartY = null; };
+    this._onTouchEnd = (e) => {
+      e.preventDefault();
+      if (!this._touchStart || this.gameOver) { this._touchStart = null; return; }
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - this._touchStart.x;
+      const dy = touch.clientY - this._touchStart.y;
+      const dt = Date.now() - this._touchStart.t;
+      this._touchStart = null;
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10 && dt < 300) {
+        this.rotatePiece();
+      } else if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 20) this.moveRight();
+        else if (dx < -20) this.moveLeft();
+      } else {
+        if (dy > 20) this.hardDrop();
+      }
+    };
     window.addEventListener('keydown', this._onKeyDown);
-    this.canvas.addEventListener('touchstart', this._onTouch);
-    this.canvas.addEventListener('touchmove', this._onTouch);
+    this.canvas.addEventListener('touchstart', this._onTouchStart);
     this.canvas.addEventListener('touchend', this._onTouchEnd);
   }
 
   removeInput() {
     window.removeEventListener('keydown', this._onKeyDown);
-    this.canvas.removeEventListener('touchstart', this._onTouch);
-    this.canvas.removeEventListener('touchmove', this._onTouch);
+    this.canvas.removeEventListener('touchstart', this._onTouchStart);
     this.canvas.removeEventListener('touchend', this._onTouchEnd);
-    this._touchStartX = null;
-    this._touchStartY = null;
+    this._touchStart = null;
   }
 
   loop(time) {

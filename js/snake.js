@@ -89,27 +89,32 @@ class SnakeGame {
         this.nextDir = nd;
       }
     };
-    this._onTouch = (e) => {
+    this._onTouchStart = (e) => {
       e.preventDefault();
       if (this.gameOver) return;
-      const touch = e.touches ? e.touches[0] : e;
+      const touch = e.touches[0];
       if (!this.started) { this.startGame(); return; }
-      if (!this._touchStart) { this._touchStart = { x: touch.clientX, y: touch.clientY }; return; }
-      const dx = touch.clientX - this._touchStart.x;
-      const dy = touch.clientY - this._touchStart.y;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 20 && this.dir.x !== -1) this.nextDir = { x: 1, y: 0 };
-        else if (dx < -20 && this.dir.x !== 1) this.nextDir = { x: -1, y: 0 };
-      } else {
-        if (dy > 20 && this.dir.y !== -1) this.nextDir = { x: 0, y: 1 };
-        else if (dy < -20 && this.dir.y !== 1) this.nextDir = { x: 0, y: -1 };
-      }
       this._touchStart = { x: touch.clientX, y: touch.clientY };
     };
-    this._onTouchEnd = () => { this._touchStart = null; };
+    this._onTouchEnd = (e) => {
+      e.preventDefault();
+      if (!this._touchStart || this.gameOver) { this._touchStart = null; return; }
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - this._touchStart.x;
+      const dy = touch.clientY - this._touchStart.y;
+      if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx > 0 && this.dir.x !== -1) this.nextDir = { x: 1, y: 0 };
+          else if (dx < 0 && this.dir.x !== 1) this.nextDir = { x: -1, y: 0 };
+        } else {
+          if (dy > 0 && this.dir.y !== -1) this.nextDir = { x: 0, y: 1 };
+          else if (dy < 0 && this.dir.y !== 1) this.nextDir = { x: 0, y: -1 };
+        }
+      }
+      this._touchStart = null;
+    };
     window.addEventListener('keydown', this._onKeyDown);
-    this.canvas.addEventListener('touchstart', this._onTouch);
-    this.canvas.addEventListener('touchmove', this._onTouch);
+    this.canvas.addEventListener('touchstart', this._onTouchStart);
     this.canvas.addEventListener('touchend', this._onTouchEnd);
   }
 

@@ -176,15 +176,19 @@ class Game2048 {
       }
       this.render();
     };
-    this._onTouch = (e) => {
+    this._onTouchStart = (e) => {
       if (this.gameOver) return;
-      const touch = e.touches ? e.touches[0] : e;
+      const touch = e.touches[0];
       if (!this.started) { this.startGame(); return; }
-      if (!this._touchStart) { this._touchStart = { x: touch.clientX, y: touch.clientY }; return; }
+      this._touchStart = { x: touch.clientX, y: touch.clientY };
+    };
+    this._onTouchEnd = (e) => {
+      if (!this._touchStart || this.gameOver) { this._touchStart = null; return; }
+      const touch = e.changedTouches[0];
       const dx = touch.clientX - this._touchStart.x;
       const dy = touch.clientY - this._touchStart.y;
+      this._touchStart = null;
       if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-      if (this.animating) return;
       let moved = false;
       if (Math.abs(dx) > Math.abs(dy)) {
         moved = dx > 0 ? this.moveRight() : this.moveLeft();
@@ -197,12 +201,9 @@ class Game2048 {
         this.checkWin();
       }
       this.render();
-      this._touchStart = { x: touch.clientX, y: touch.clientY };
     };
-    this._onTouchEnd = () => { this._touchStart = null; };
     window.addEventListener('keydown', this._onKeyDown);
-    this.canvas.addEventListener('touchstart', this._onTouch);
-    this.canvas.addEventListener('touchmove', this._onTouch);
+    this.canvas.addEventListener('touchstart', this._onTouchStart);
     this.canvas.addEventListener('touchend', this._onTouchEnd);
   }
 

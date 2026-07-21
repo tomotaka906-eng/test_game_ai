@@ -95,11 +95,10 @@ class App {
     const headerH = header.offsetHeight;
     const w = container.clientWidth;
     const h = container.clientHeight - headerH;
-    this.canvas.width = Math.max(100, Math.floor(w * devicePixelRatio));
-    this.canvas.height = Math.max(100, Math.floor(h * devicePixelRatio));
+    this.canvas.width = w;
+    this.canvas.height = h;
     this.canvas.style.width = w + 'px';
     this.canvas.style.height = h + 'px';
-    this.ctx.imageSmoothingEnabled = false;
   }
 
   showMenu() {
@@ -213,6 +212,7 @@ class App {
     const needs = { tetris: true, snake: true, game2048: true };
     const dpad = document.getElementById('dpad');
     dpad.classList.toggle('hidden', !needs[game]);
+    document.getElementById('dpadExtra').classList.toggle('hidden', game !== 'tetris');
   }
 
   updateScoreDisplay(score) {
