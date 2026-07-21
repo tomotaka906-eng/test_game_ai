@@ -202,6 +202,10 @@ header h1 {
   backdrop-filter: blur(4px);
 }
 
+#startMsg {
+  pointer-events: auto;
+}
+
 .hidden {
   display: none !important;
 }
