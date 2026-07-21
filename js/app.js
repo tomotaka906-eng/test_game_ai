@@ -71,6 +71,7 @@ class App {
     document.querySelectorAll('.game-card').forEach(card => {
       card.addEventListener('click', () => this.startGame(card.dataset.game));
     });
+  }
 
   setupStartMessage() {
     const msg = document.getElementById('startMsg');
