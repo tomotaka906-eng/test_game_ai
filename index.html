@@ -45,6 +45,24 @@
           <div class="card-desc">ブロックを揃えてラインを消せ！</div>
           <div class="card-highscore">最高記録: <span id="hsTetris">0</span></div>
         </div>
+        <div class="game-card" data-game="snake">
+          <div class="card-icon">🐍</div>
+          <div class="card-title">Snake</div>
+          <div class="card-desc">餌を食べて蛇を成長させろ！</div>
+          <div class="card-highscore">最高記録: <span id="hsSnake">0</span></div>
+        </div>
+        <div class="game-card" data-game="breakout">
+          <div class="card-icon">🧱</div>
+          <div class="card-title">Breakout</div>
+          <div class="card-desc">パドルで跳ね返してブロックを壊せ！</div>
+          <div class="card-highscore">最高記録: <span id="hsBreakout">0</span></div>
+        </div>
+        <div class="game-card" data-game="game2048">
+          <div class="card-icon">🔢</div>
+          <div class="card-title">2048</div>
+          <div class="card-desc">タイルを合体して2048を目指せ！</div>
+          <div class="card-highscore">最高記録: <span id="hsGame2048">0</span></div>
+        </div>
       </div>
       <div class="lb-container" id="leaderboard">
         <div class="lb-empty">読み込み中...</div>
@@ -88,6 +106,9 @@
 <script src="js/flappy.js"></script>
 <script src="js/cave.js"></script>
 <script src="js/tetris.js"></script>
+<script src="js/snake.js"></script>
+<script src="js/breakout.js"></script>
+<script src="js/game2048.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
@@ -97,6 +118,9 @@ app.register('dino', new DinoGame());
 app.register('flappy', new FlappyGame());
 app.register('cave', new CaveGame());
 app.register('tetris', new TetrisGame());
+app.register('snake', new SnakeGame());
+app.register('breakout', new BreakoutGame());
+app.register('game2048', new Game2048());
 app.init();
 </script>
 </body>

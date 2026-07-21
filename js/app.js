@@ -30,9 +30,9 @@ class App {
   loadScores() {
     try {
       const data = localStorage.getItem('mgc_scores');
-      return data ? JSON.parse(data) : { dino: 0, flappy: 0, cave: 0, tetris: 0 };
+      return data ? JSON.parse(data) : { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0 };
     } catch {
-      return { dino: 0, flappy: 0, cave: 0, tetris: 0 };
+      return { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0 };
     }
   }
 
@@ -43,7 +43,7 @@ class App {
   }
 
   updateHighScoreLabels() {
-    ['dino','flappy','cave','tetris'].forEach(g => {
+    ['dino','flappy','cave','tetris','snake','breakout','game2048'].forEach(g => {
       const el = document.getElementById('hs' + g.charAt(0).toUpperCase() + g.slice(1));
       if (el) el.textContent = this.scores[g] || 0;
     });
@@ -118,7 +118,8 @@ class App {
     document.getElementById('gameScreen').classList.add('active');
     document.getElementById('gameTitle').textContent = {
       dino: 'Dino Runner', flappy: 'Flappy Bird',
-      cave: 'Cave Runner', tetris: 'Tetris'
+      cave: 'Cave Runner', tetris: 'Tetris',
+      snake: 'Snake', breakout: 'Breakout', game2048: '2048'
     }[name];
     this.resizeCanvas();
     this.showStartMessage();
@@ -183,7 +184,10 @@ class App {
       dino: 'Space / ↑ : ジャンプ  |  ↓ : しゃがむ',
       flappy: 'Space / タップ : 羽ばたく',
       cave: 'Space / ↑ : ジャンプ  |  ↓ : しゃがむ',
-      tetris: '← → : 移動  |  ↑ : 回転  |  ↓ : 落下  |  Space : 一気に落下'
+      tetris: '← → : 移動  |  ↑ : 回転  |  ↓ : 落下  |  Space : 一気に落下',
+      snake: '← ↑ → ↓ / WASD : 移動',
+      breakout: '← → / マウス : 移動',
+      game2048: '← ↑ → ↓ / WASD : スライド'
     };
     document.getElementById('controlsHint').textContent = hints[game] || '';
   }
@@ -205,8 +209,8 @@ class App {
   async loadLeaderboard() {
     const container = document.getElementById('leaderboard');
     if (!container) return;
-    const games = ['dino','flappy','cave','tetris'];
-    const names = ['Dino Runner','Flappy Bird','Cave Runner','Tetris'];
+    const games = ['dino','flappy','cave','tetris','snake','breakout','game2048'];
+    const names = ['Dino Runner','Flappy Bird','Cave Runner','Tetris','Snake','Breakout','2048'];
     let html = '';
     for (const g of games) {
       const scores = await this.fb.getTopScores(g, 3);
