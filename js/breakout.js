@@ -1,13 +1,4 @@
-class BreakoutGame {
-  constructor() {
-    this.app = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.animId = null;
-    this.running = false;
-    this.reset();
-  }
-
+class BreakoutGame extends BaseGame {
   reset() {
     this.paddle = { x: 0, y: 0, w: 80, h: 14 };
     this.ball = { x: 0, y: 0, r: 6, dx: 3, dy: -3 };
@@ -29,9 +20,7 @@ class BreakoutGame {
 
   start() {
     this.reset();
-    this.canvas = this.app.canvas;
-    this.ctx = this.app.ctx;
-    this.highScore = this.app.scores.breakout;
+    this.initCanvas();
     this.W = this.canvas.width;
     this.H = this.canvas.height;
     this.paddle.w = Math.min(100, this.W * 0.2);
@@ -42,25 +31,11 @@ class BreakoutGame {
     this.brickW = (this.W - this.brickPad * (this.brickCols + 1)) / this.brickCols;
     this.initBricks();
     this.setupInput();
-    this.running = true;
-    this.lastTime = performance.now();
-    this.loop(this.lastTime);
-  }
-
-  stop() {
-    this.running = false;
-    if (this.animId) cancelAnimationFrame(this.animId);
-    this.removeInput();
-  }
-
-  restart() {
-    this.stop();
-    this.start();
+    this.startLoop();
   }
 
   startGame() {
-    this.started = true;
-    document.getElementById('startMsg').classList.add('hidden');
+    super.startGame();
     this.launchBall();
   }
 
@@ -100,9 +75,7 @@ class BreakoutGame {
       if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') this.paddle.dx = 0;
     };
     this._onMouseMove = (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const scaleX = this.canvas.width / rect.width;
-      this.mouseX = (e.clientX - rect.left) * scaleX;
+      this.mouseX = GameUtils.canvasPoint(this.canvas, e.clientX, e.clientY).x;
     };
     this._onTouch = (e) => {
       e.preventDefault();
@@ -110,9 +83,7 @@ class BreakoutGame {
       const touch = e.touches ? e.touches[0] : e;
       if (!this.started) { this.startGame(); return; }
       this.paddle.dx = 0;
-      const rect = this.canvas.getBoundingClientRect();
-      const scaleX = this.canvas.width / rect.width;
-      this.mouseX = (touch.clientX - rect.left) * scaleX;
+      this.mouseX = GameUtils.canvasPoint(this.canvas, touch.clientX, touch.clientY).x;
     };
     window.addEventListener('keydown', this._onKeyDown);
     window.addEventListener('keyup', this._onKeyUp);
@@ -128,15 +99,6 @@ class BreakoutGame {
     this.canvas.removeEventListener('touchstart', this._onTouch);
     this.canvas.removeEventListener('touchmove', this._onTouch);
     this.mouseX = null;
-  }
-
-  loop(time) {
-    if (!this.running) return;
-    const dt = time - this.lastTime;
-    this.lastTime = time;
-    this.update(dt);
-    this.render();
-    this.animId = requestAnimationFrame((t) => this.loop(t));
   }
 
   update(dt) {
@@ -182,8 +144,7 @@ class BreakoutGame {
 
     for (const b of this.bricks) {
       if (!b.alive) continue;
-      if (this.ball.x + this.ball.r > b.x && this.ball.x - this.ball.r < b.x + b.w &&
-          this.ball.y + this.ball.r > b.y && this.ball.y - this.ball.r < b.y + b.h) {
+      if (GameUtils.rectsOverlap(this.ball.x - this.ball.r, this.ball.y - this.ball.r, this.ball.r * 2, this.ball.r * 2, b.x, b.y, b.w, b.h)) {
         b.alive = false;
         this.score += 10;
         this.app.updateScoreDisplay(this.score);
@@ -213,16 +174,12 @@ class BreakoutGame {
   }
 
   endGame() {
-    this.gameOver = true;
-    const isNew = this.app.recordScore('breakout', this.score);
-    this.app.showGameOver(this.score, isNew);
+    this.finishGame(this.score);
   }
 
   render() {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.W, this.H);
-    ctx.fillStyle = '#0a0a1a';
-    ctx.fillRect(0, 0, this.W, this.H);
+    GameUtils.clearCanvas(ctx, this.W, this.H, '#0a0a1a');
 
     this.bricks.forEach(b => {
       if (!b.alive) return;

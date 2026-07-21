@@ -1,18 +1,4 @@
-class FlappyGame {
-  constructor() {
-    this.app = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.animId = null;
-    this.running = false;
-    this.reset();
-  }
-
-  startGame() {
-    this.started = true;
-    document.getElementById('startMsg').classList.add('hidden');
-  }
-
+class FlappyGame extends BaseGame {
   reset() {
     this.bird = {
       x: 0, y: 0, w: 30, h: 24,
@@ -39,9 +25,7 @@ class FlappyGame {
 
   start() {
     this.reset();
-    this.canvas = this.app.canvas;
-    this.ctx = this.app.ctx;
-    this.highScore = this.app.scores.flappy;
+    this.initCanvas();
     const H = this.canvas.height;
     const W = this.canvas.width;
     this.groundY = H - 60;
@@ -49,19 +33,7 @@ class FlappyGame {
     this.bird.x = Math.floor(W * 0.25);
     this.bird.y = Math.floor(H * 0.35);
     this.setupInput();
-    this.running = true;
-    this.loop(0);
-  }
-
-  stop() {
-    this.running = false;
-    if (this.animId) cancelAnimationFrame(this.animId);
-    this.removeInput();
-  }
-
-  restart() {
-    this.stop();
-    this.start();
+    this.startLoop();
   }
 
   setupInput() {
@@ -101,14 +73,7 @@ class FlappyGame {
     setTimeout(() => { this.bird.wingFrame = 0; }, 150);
   }
 
-  loop(timestamp) {
-    if (!this.running) return;
-    this.update(timestamp);
-    this.render();
-    this.animId = requestAnimationFrame((t) => this.loop(t));
-  }
-
-  update(ts) {
+  update(dt, ts) {
     if (this.gameOver) return;
     this.frame++;
 
@@ -177,24 +142,20 @@ class FlappyGame {
     const bh = b.h - shrink * 2;
 
     const topPipeH = pipe.gapY;
-    if (bx < pipe.x + pipe.w && bx + bw > pipe.x &&
-        by < topPipeH && by + bh > 0) {
+    if (GameUtils.rectsOverlap(bx, by, bw, bh, pipe.x, 0, pipe.w, topPipeH)) {
       return true;
     }
 
     const bottomPipeY = pipe.gapY + this.pipeGap;
     const bottomPipeH = this.groundY - bottomPipeY;
-    if (bx < pipe.x + pipe.w && bx + bw > pipe.x &&
-        by < this.groundY && by + bh > bottomPipeY) {
+    if (GameUtils.rectsOverlap(bx, by, bw, bh, pipe.x, bottomPipeY, pipe.w, bottomPipeH)) {
       return true;
     }
     return false;
   }
 
   endGame() {
-    this.gameOver = true;
-    const isNew = this.app.recordScore('flappy', this.score);
-    this.app.showGameOver(this.score, isNew);
+    this.finishGame(this.score);
   }
 
   render() {
@@ -300,10 +261,6 @@ class FlappyGame {
   }
 
   drawScore(ctx, W) {
-    ctx.fillStyle = '#ffd93d';
-    ctx.font = `bold ${Math.floor(14 * (this.canvas.width / 600))}px monospace`;
-    ctx.textAlign = 'right';
-    ctx.fillText(`HI ${this.highScore}`, W - 8, 24);
-    ctx.fillText(`${this.score}`, W - 8, 42);
+    GameUtils.drawHiScore(ctx, W, '#ffd93d', this.highScore, this.score);
   }
 }
