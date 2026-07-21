@@ -119,7 +119,7 @@ class FlappyGame {
 
       if (!this.lastPipeTime) this.lastPipeTime = ts;
       const pipeDt = ts - this.lastPipeTime;
-      if (pipeDt >= 1500 + Math.random() * 400) {
+      if (pipeDt >= 1500 + Math.random() * 1200) {
         this.lastPipeTime = ts;
         this.spawnPipe();
       }

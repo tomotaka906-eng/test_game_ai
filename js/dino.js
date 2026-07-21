@@ -10,7 +10,7 @@ class DinoGame {
 
   reset() {
     this.dino = {
-      x: 0, y: 0, w: 44, h: 48,
+      x: 0, y: 0, w: 44, h: 47,
       vy: 0, grounded: true,
       ducking: false,
       legFrame: 0, legTimer: 0
@@ -18,15 +18,23 @@ class DinoGame {
     this.groundY = 0;
     this.obstacles = [];
     this.clouds = [];
-    this.speed = 6;
+    this.speed = 5;
     this.score = 0;
+    this.displayScore = 0;
     this.highScore = 0;
     this.gameOver = false;
     this.started = false;
     this.spawnTimer = 0;
-    this.minSpawnGap = 80;
     this.frame = 0;
     this.lastSpawnTime = 0;
+    this.totalFrames = 0;
+    this.minObstacleDistance = 0;
+    this.groundOffset = 0;
+    this.nightMode = false;
+    this.nightTimer = 0;
+    this.nextNightScore = 700;
+    this.flashTimer = 0;
+    this.flashActive = false;
   }
 
   start() {
@@ -34,7 +42,7 @@ class DinoGame {
     this.canvas = this.app.canvas;
     this.ctx = this.app.ctx;
     this.highScore = this.app.scores.dino;
-    this.groundY = this.canvas.height * 0.75;
+    this.groundY = Math.floor(this.canvas.height * 0.75);
     this.dino.x = Math.floor(this.canvas.width * 0.12);
     this.dino.y = this.groundY - this.dino.h;
     this.clouds = [];
@@ -115,7 +123,6 @@ class DinoGame {
     window.removeEventListener('keyup', this._onKeyUp);
     this.canvas.removeEventListener('touchstart', this._onTouchStart);
     this.canvas.removeEventListener('touchend', this._onTouchEnd);
-    this._lastTouchY = null;
   }
 
   startGame() {
@@ -125,7 +132,7 @@ class DinoGame {
 
   jump() {
     if (this.dino.grounded) {
-      this.dino.vy = -11 - this.speed * 0.3;
+      this.dino.vy = -10;
       this.dino.grounded = false;
       this.dino.ducking = false;
     }
@@ -147,11 +154,13 @@ class DinoGame {
   update(ts) {
     if (this.gameOver || !this.started) return;
 
-    this.frame++;
-    this.speed = 6 + Math.floor(this.score / 100) * 0.5;
-    if (this.speed > 16) this.speed = 16;
+    this.totalFrames++;
 
-    this.dino.vy += 0.65;
+    // 速度: フレームごとに +0.001、最大 13.0 (仕様準拠)
+    this.speed = Math.min(13, 5 + this.totalFrames * 0.001);
+
+    // 重力 0.6、ジャンプ初速 -10 (仕様準拠)
+    this.dino.vy += 0.6;
     this.dino.y += this.dino.vy;
     if (this.dino.y >= this.groundY - this.dino.h) {
       this.dino.y = this.groundY - this.dino.h;
@@ -167,9 +176,32 @@ class DinoGame {
       }
     }
 
-    this.score++;
-    this.app.updateScoreDisplay(this.score);
+    // スコア: 1フレームごとに +0.15、表示は整数 (仕様準拠)
+    this.score += 0.15;
+    this.displayScore = Math.floor(this.score);
+    this.app.updateScoreDisplay(this.displayScore);
 
+    // 100点ごとにフラッシュ演出 (仕様準拠)
+    if (this.displayScore > 0 && this.displayScore % 100 === 0 && !this.flashActive) {
+      this.flashActive = true;
+      this.flashTimer = 10;
+    }
+    if (this.flashTimer > 0) {
+      this.flashTimer--;
+    } else {
+      this.flashActive = false;
+    }
+
+    // 昼夜逆転 (仕様準拠: 700, 1400, 2100...)
+    if (this.displayScore >= this.nextNightScore) {
+      this.nightMode = !this.nightMode;
+      this.nextNightScore += 700;
+    }
+
+    // 地面スクロール
+    this.groundOffset = (this.groundOffset + this.speed) % 40;
+
+    // 雲
     this.clouds.forEach(c => {
       c.x -= c.speed;
       if (c.x + c.w < 0) {
@@ -179,10 +211,11 @@ class DinoGame {
       }
     });
 
+    // 障害物スポーン間隔: speed * 30 + ランダムマージン (仕様準拠)
     if (!this.lastSpawnTime) this.lastSpawnTime = ts;
     const spawnDt = ts - this.lastSpawnTime;
-    const gapMs = Math.max(700, (this.minSpawnGap - Math.floor(this.speed * 2)) * 16.67);
-    if (spawnDt >= gapMs + Math.random() * 300) {
+    const minGap = this.speed * 30 + 60 + Math.random() * 40;
+    if (spawnDt >= minGap * 3) {
       this.lastSpawnTime = ts;
       this.spawnObstacle();
     }
@@ -203,29 +236,44 @@ class DinoGame {
 
   spawnObstacle() {
     const r = Math.random();
+    const duckingHitboxH = 26;
+    const standingHitboxH = 47;
     let obs;
-    if (this.score > 300 && r < 0.25) {
-      obs = { type: 'ptera', x: this.canvas.width, w: 40, h: 30 };
-      obs.y = this.groundY - 40 - Math.random() * 60;
-    } else if (r < 0.4) {
-      obs = { type: 'cactus_small', x: this.canvas.width, w: 16, h: 32 };
-      obs.y = this.groundY - obs.h;
-    } else if (r < 0.7) {
-      obs = { type: 'cactus_tall', x: this.canvas.width, w: 18, h: 48 };
-      obs.y = this.groundY - obs.h;
+
+    // プテラノドン: スコア400以上で出現 (仕様準拠)
+    if (this.displayScore > 400 && r < 0.3) {
+      const alt = Math.random();
+      // 高: 頭上通過 (しゃがみ不要)
+      // 中: しゃがみ必要
+      // 低: ジャンプ必要
+      let y;
+      if (alt < 0.33) {
+        y = this.groundY - 140; // 高: 頭上
+      } else if (alt < 0.66) {
+        y = this.groundY - standingHitboxH - 25; // 中: しゃがみ必要
+      } else {
+        y = this.groundY - 80; // 低: ジャンプ必要
+      }
+      obs = { type: 'ptera', x: this.canvas.width, w: 42, h: 30, y: y };
+    } else if (r < 0.5) {
+      // 小サボテン
+      const count = Math.random() < 0.5 ? 1 : 2;
+      obs = { type: 'cactus_small', x: this.canvas.width, w: 16 * count + 10, h: 32, y: this.groundY - 32 };
     } else {
-      obs = { type: 'cactus_group', x: this.canvas.width, w: 36, h: 48 };
-      obs.y = this.groundY - obs.h;
+      // 大サボテン
+      const count = Math.random() < 0.5 ? 1 : 2;
+      obs = { type: 'cactus_tall', x: this.canvas.width, w: 18 * count + 12, h: 48, y: this.groundY - 48 };
     }
     this.obstacles.push(obs);
   }
 
   checkCollision(dino, obs) {
+    // 当たり判定を内側に縮小 (仕様準拠: 理不尽な相打ち防止)
     const shrink = 4;
+    const dw = dino.w - shrink * 2;
+    const dh = (dino.ducking ? 26 : 47) - shrink * 2;
     const dx = dino.x + shrink;
-    const dy = dino.y + shrink;
-    const dw = dino.w - shrink * 2 - (dino.ducking ? 0 : 0);
-    const dh = dino.h - shrink * 2 - (dino.ducking ? 16 : 0);
+    const dy = dino.y + shrink + (dino.ducking ? (47 - 26) : 0);
     const ox = obs.x + shrink;
     const oy = obs.y + shrink;
     const ow = obs.w - shrink * 2;
@@ -235,8 +283,8 @@ class DinoGame {
 
   endGame() {
     this.gameOver = true;
-    const isNew = this.app.recordScore('dino', this.score);
-    this.app.showGameOver(this.score, isNew);
+    const isNew = this.app.recordScore('dino', this.displayScore);
+    this.app.showGameOver(this.displayScore, isNew);
   }
 
   render() {
@@ -245,37 +293,44 @@ class DinoGame {
     const H = this.canvas.height;
     ctx.clearRect(0, 0, W, H);
 
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#1a1a2e');
-    grad.addColorStop(1, '#16213e');
-    ctx.fillStyle = grad;
+    const bgColor = this.nightMode ? '#0a0a1a' : '#1a1a2e';
+    const groundColor = this.nightMode ? '#111128' : '#16213e';
+    const accentColor = this.nightMode ? '#555' : '#0f3460';
+    const textColor = this.nightMode ? '#888' : '#e94560';
+
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, W, H);
 
+    // フラッシュ演出 (100点ごと)
+    if (this.flashActive) {
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
     this.clouds.forEach(c => {
-      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fillStyle = this.nightMode ? 'rgba(200,200,200,0.06)' : 'rgba(255,255,255,0.08)';
       ctx.beginPath();
       ctx.ellipse(c.x, c.y, c.w * 0.5, 12, 0, 0, Math.PI * 2);
       ctx.fill();
     });
 
-    this.drawGround(ctx, W, H);
+    this.drawGround(ctx, W, H, groundColor, accentColor);
     this.drawDino(ctx);
     this.obstacles.forEach(o => this.drawObstacle(ctx, o));
-    this.drawScore(ctx, W);
+    this.drawScore(ctx, W, textColor);
   }
 
-  drawGround(ctx, W, H) {
+  drawGround(ctx, W, H, groundColor, accentColor) {
     const gy = this.groundY;
-    ctx.strokeStyle = '#0f3460';
+    ctx.strokeStyle = accentColor;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, gy);
     ctx.lineTo(W, gy);
     ctx.stroke();
 
-    const offset = this.frame * this.speed * 0.5;
-    ctx.fillStyle = '#0f3460';
-    for (let x = -offset % 40; x < W; x += 40) {
+    ctx.fillStyle = accentColor;
+    for (let x = -this.groundOffset; x < W; x += 40) {
       ctx.fillRect(x, gy + 4, 2, 4);
       ctx.fillRect(x + 20, gy + 6, 2, 3);
     }
@@ -283,11 +338,12 @@ class DinoGame {
 
   drawDino(ctx) {
     const d = this.dino;
+    const bodyColor = this.nightMode ? '#a0a0a0' : '#4ecca3';
     ctx.save();
     ctx.translate(d.x, d.y);
 
     if (d.ducking) {
-      ctx.fillStyle = '#4ecca3';
+      ctx.fillStyle = bodyColor;
       ctx.fillRect(4, 8, 36, 20);
       ctx.fillRect(2, 12, 6, 14);
       ctx.fillRect(36, 12, 6, 14);
@@ -296,7 +352,7 @@ class DinoGame {
       ctx.fillStyle = '#222';
       ctx.fillRect(30, 11, 3, 4);
     } else {
-      ctx.fillStyle = '#4ecca3';
+      ctx.fillStyle = bodyColor;
       ctx.fillRect(8, 0, 28, 34);
       ctx.fillRect(4, 4, 8, 22);
       ctx.fillRect(32, 4, 10, 22);
@@ -304,7 +360,7 @@ class DinoGame {
       ctx.fillRect(28, 4, 8, 8);
       ctx.fillStyle = '#222';
       ctx.fillRect(30, 5, 4, 5);
-      ctx.fillStyle = '#4ecca3';
+      ctx.fillStyle = bodyColor;
       const legLen = d.grounded ? 10 : 8;
       if (d.grounded) {
         if (d.legFrame === 0) {
@@ -323,36 +379,45 @@ class DinoGame {
   }
 
   drawObstacle(ctx, obs) {
-    ctx.fillStyle = '#e94560';
+    const color = this.nightMode ? '#cc4444' : '#e94560';
+    ctx.fillStyle = color;
     if (obs.type === 'ptera') {
       ctx.fillRect(obs.x, obs.y, obs.w, obs.h * 0.5);
       ctx.fillRect(obs.x + obs.w * 0.3, obs.y - 6, obs.w * 0.4, 6);
       ctx.fillRect(obs.x + obs.w * 0.3, obs.y + obs.h * 0.5, obs.w * 0.4, 6);
-      ctx.fillStyle = '#ff6b6b';
+      ctx.fillStyle = this.nightMode ? '#888' : '#ff6b6b';
       ctx.fillRect(obs.x + obs.w * 0.6, obs.y - 3, obs.w * 0.3, 3);
       ctx.fillRect(obs.x + obs.w * 0.6, obs.y + obs.h * 0.5, obs.w * 0.3, 3);
     } else if (obs.type === 'cactus_small') {
       ctx.fillRect(obs.x + 2, obs.y, 12, obs.h);
       ctx.fillRect(obs.x, obs.y + 4, 16, 8);
       ctx.fillRect(obs.x + 2, obs.y + 4, 6, 20);
-    } else if (obs.type === 'cactus_tall') {
+      // 2本連続の場合
+      if (obs.w > 30) {
+        ctx.fillRect(obs.x + 20, obs.y + 2, 12, obs.h - 2);
+        ctx.fillRect(obs.x + 18, obs.y + 4, 16, 8);
+        ctx.fillRect(obs.x + 20, obs.y + 4, 6, 18);
+      }
+    } else {
       ctx.fillRect(obs.x + 3, obs.y, 12, obs.h);
       ctx.fillRect(obs.x, obs.y + 4, 18, 8);
       ctx.fillRect(obs.x + 2, obs.y + 4, 6, 28);
       ctx.fillRect(obs.x + 10, obs.y + 20, 6, 18);
-    } else {
-      ctx.fillRect(obs.x + 2, obs.y, 10, obs.h);
-      ctx.fillRect(obs.x + 14, obs.y + 4, 10, obs.h - 8);
-      ctx.fillRect(obs.x + 26, obs.y + 8, 10, obs.h - 12);
-      ctx.fillRect(obs.x, obs.y + 4, 36, 8);
+      // 2本連続の場合
+      if (obs.w > 35) {
+        ctx.fillRect(obs.x + 22, obs.y + 2, 12, obs.h - 2);
+        ctx.fillRect(obs.x + 20, obs.y + 4, 16, 8);
+        ctx.fillRect(obs.x + 22, obs.y + 4, 6, 26);
+        ctx.fillRect(obs.x + 28, obs.y + 20, 6, 16);
+      }
     }
   }
 
-  drawScore(ctx, W) {
-    ctx.fillStyle = '#e94560';
+  drawScore(ctx, W, color) {
+    ctx.fillStyle = color;
     ctx.font = `bold ${Math.floor(14 * (this.canvas.width / 600))}px monospace`;
     ctx.textAlign = 'right';
     ctx.fillText(`HI ${this.highScore}`, W - 8, 24);
-    ctx.fillText(`${this.score}`, W - 8, 42);
+    ctx.fillText(`${this.displayScore}`, W - 8, 42);
   }
 }

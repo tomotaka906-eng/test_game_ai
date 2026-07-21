@@ -175,7 +175,7 @@ class CaveGame {
     if (!this.lastSpawnTime) this.lastSpawnTime = ts;
     const spawnDt = ts - this.lastSpawnTime;
     const gapMs = Math.max(700, (this.minSpawnGap - Math.floor(this.speed * 2)) * 16.67);
-    if (spawnDt >= gapMs + Math.random() * 300) {
+    if (spawnDt >= gapMs + Math.random() * 800) {
       this.lastSpawnTime = ts;
       this.spawnObstacle();
     }

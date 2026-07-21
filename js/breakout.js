@@ -140,7 +140,7 @@ class BreakoutGame {
   }
 
   update(dt) {
-    if (this.gameOver || !this.started) return;
+    if (this.gameOver) return;
     if (this.mouseX !== null) {
       this.paddle.x = this.mouseX - this.paddle.w / 2;
     }
@@ -167,7 +167,7 @@ class BreakoutGame {
         this.ball.x > this.paddle.x && this.ball.x < this.paddle.x + this.paddle.w) {
       const hit = (this.ball.x - this.paddle.x) / this.paddle.w;
       const angle = -Math.PI / 2 + (hit - 0.5) * 1.8;
-      const speed = Math.sqrt(this.ball.dx ** 2 + this.ball.dy ** 2);
+      const speed = Math.max(4, Math.sqrt(this.ball.dx ** 2 + this.ball.dy ** 2));
       this.ball.dx = Math.cos(angle) * speed;
       this.ball.dy = Math.sin(angle) * speed;
       this.ball.y = this.paddle.y - this.ball.r;
@@ -186,12 +186,14 @@ class BreakoutGame {
           this.ball.y + this.ball.r > b.y && this.ball.y - this.ball.r < b.y + b.h) {
         b.alive = false;
         this.score += 10;
+        this.app.updateScoreDisplay(this.score);
         const overlapX = Math.min(this.ball.x + this.ball.r - b.x, b.x + b.w - (this.ball.x - this.ball.r));
         const overlapY = Math.min(this.ball.y + this.ball.r - b.y, b.y + b.h - (this.ball.y - this.ball.r));
         if (overlapX < overlapY) this.ball.dx *= -1;
         else this.ball.dy *= -1;
         if (this.bricks.every(b => !b.alive)) {
           this.score += 50;
+          this.app.updateScoreDisplay(this.score);
           this.lives++;
           this.initBricks();
           this.resetBall();

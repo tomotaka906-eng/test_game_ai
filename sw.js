@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mgc-v3';
+const CACHE_NAME = 'mgc-v5';
 const ASSETS = [
   '.',
   'index.html',
@@ -13,6 +13,7 @@ const ASSETS = [
   'js/snake.js',
   'js/breakout.js',
   'js/game2048.js',
+  'js/minesweeper.js',
   'manifest.json',
   'assets/icon.svg',
   'assets/icon-192.png',

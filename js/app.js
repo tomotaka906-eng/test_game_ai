@@ -11,6 +11,8 @@ class App {
   }
 
   init() {
+    this.displayVersion();
+    this.checkUpdateNotice();
     this.updateHighScoreLabels();
     this.setupMenu();
     this.setupBackButton();
@@ -24,19 +26,32 @@ class App {
     window.addEventListener('resize', () => this.resizeCanvas());
   }
 
+  displayVersion() {
+    const el = document.getElementById('appVersion');
+    if (el) el.textContent = '2026.07.21';
+  }
+
+  checkUpdateNotice() {
+    if (sessionStorage.getItem('mgc_updated')) {
+      sessionStorage.removeItem('mgc_updated');
+      const el = document.getElementById('updateNotice');
+      requestAnimationFrame(() => el.classList.add('show'));
+      setTimeout(() => el.classList.remove('show'), 3000);
+    }
+  }
+
   setupServiceWorkerUpdate() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(reg => {
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              document.getElementById('updateToast').classList.remove('hidden');
-            }
-          });
-        });
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        try { sessionStorage.setItem('mgc_updated', '1'); } catch {}
+        window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
       });
-      document.getElementById('reloadBtn').addEventListener('click', () => location.reload(true));
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        setInterval(() => reg.update(), 60 * 1000);
+      });
     }
   }
 
@@ -48,9 +63,9 @@ class App {
   loadScores() {
     try {
       const data = localStorage.getItem('mgc_scores');
-      return data ? JSON.parse(data) : { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0 };
+      return data ? JSON.parse(data) : { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0, minesweeper: 0 };
     } catch {
-      return { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0 };
+      return { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0, minesweeper: 0 };
     }
   }
 
@@ -61,7 +76,7 @@ class App {
   }
 
   updateHighScoreLabels() {
-    ['dino','flappy','cave','tetris','snake','breakout','game2048'].forEach(g => {
+    ['dino','flappy','cave','tetris','snake','breakout','game2048','minesweeper'].forEach(g => {
       const el = document.getElementById('hs' + g.charAt(0).toUpperCase() + g.slice(1));
       if (el) el.textContent = this.scores[g] || 0;
     });
@@ -131,7 +146,7 @@ class App {
     document.getElementById('gameTitle').textContent = {
       dino: 'Dino Runner', flappy: 'Flappy Bird',
       cave: 'Cave Runner', tetris: 'Tetris',
-      snake: 'Snake', breakout: 'Breakout', game2048: '2048'
+      snake: 'Snake', breakout: 'Breakout', game2048: '2048', minesweeper: 'Minesweeper'
     }[name];
     this.resizeCanvas();
     this.showStartMessage();
@@ -200,7 +215,8 @@ class App {
       tetris: '← → : 移動  |  ↑ : 回転  |  ↓ : 落下  |  Space : 一気に落下',
       snake: '← ↑ → ↓ / WASD : 移動',
       breakout: '← → / マウス : 移動',
-      game2048: '← ↑ → ↓ / WASD : スライド'
+      game2048: '← ↑ → ↓ / WASD : スライド',
+      minesweeper: 'クリック : 開く  |  右クリック / 長押し : 旗  |  F : 旗モード'
     };
     document.getElementById('controlsHint').textContent = hints[game] || '';
   }
@@ -227,14 +243,15 @@ class App {
 
   setupUpdateBtn() {
     document.getElementById('updateBtn').addEventListener('click', () => {
+      const bustUrl = window.location.href.split('?')[0] + '?t=' + Date.now();
       if ('serviceWorker' in navigator) {
         caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).then(() => {
           navigator.serviceWorker.getRegistrations().then(regs => {
-            Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+            Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = bustUrl; });
           });
         });
       } else {
-        location.reload(true);
+        window.location.href = bustUrl;
       }
     });
   }
@@ -263,8 +280,8 @@ class App {
   async loadLeaderboard() {
     const container = document.getElementById('leaderboard');
     if (!container) return;
-    const games = ['dino','flappy','cave','tetris','snake','breakout','game2048'];
-    const names = ['Dino Runner','Flappy Bird','Cave Runner','Tetris','Snake','Breakout','2048'];
+    const games = ['dino','flappy','cave','tetris','snake','breakout','game2048','minesweeper'];
+    const names = ['Dino Runner','Flappy Bird','Cave Runner','Tetris','Snake','Breakout','2048','Minesweeper'];
     let html = '';
     for (const g of games) {
       const scores = await this.fb.getTopScores(g, 3);

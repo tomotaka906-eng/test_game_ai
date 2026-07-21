@@ -209,8 +209,7 @@ class Game2048 {
 
   removeInput() {
     window.removeEventListener('keydown', this._onKeyDown);
-    this.canvas.removeEventListener('touchstart', this._onTouch);
-    this.canvas.removeEventListener('touchmove', this._onTouch);
+    this.canvas.removeEventListener('touchstart', this._onTouchStart);
     this.canvas.removeEventListener('touchend', this._onTouchEnd);
     this._touchStart = null;
   }

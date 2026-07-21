@@ -14,7 +14,7 @@
 <body>
 <div id="app">
   <header>
-    <h1>Mini Games</h1>
+    <h1>Mini Games<span id="appVersion" class="version-badge"></span></h1>
     <span id="highScoreLabel"></span>
     <button id="updateBtn" class="header-btn" title="更新">↻</button>
   </header>
@@ -64,6 +64,12 @@
           <div class="card-desc">タイルを合体して2048を目指せ！</div>
           <div class="card-highscore">最高記録: <span id="hsGame2048">0</span></div>
         </div>
+        <div class="game-card" data-game="minesweeper">
+          <div class="card-icon">💣</div>
+          <div class="card-title">Minesweeper</div>
+          <div class="card-desc">地雷を避けて全マスを開け！</div>
+          <div class="card-highscore">最高記録: <span id="hsMinesweeper">0</span></div>
+        </div>
       </div>
       <div class="lb-container" id="leaderboard">
         <div class="lb-empty">読み込み中...</div>
@@ -78,15 +84,17 @@
       </div>
       <canvas id="gameCanvas"></canvas>
       <div id="dpad" class="hidden">
-        <button class="dpad-btn" data-key="ArrowUp">▲</button>
-        <div class="dpad-row">
+        <div id="dpadLeft">
           <button class="dpad-btn" data-key="ArrowLeft">◀</button>
           <button class="dpad-btn" data-key="ArrowDown">▼</button>
-          <button class="dpad-btn" data-key="ArrowRight">▶</button>
+          <button class="dpad-btn" data-key="ArrowUp">▲</button>
         </div>
-        <div id="dpadExtra" class="hidden">
-          <button class="dpad-btn sm" data-key="ArrowUp">回転</button>
-          <button class="dpad-btn sm" data-key="Space">⤓</button>
+        <div id="dpadRight">
+          <div id="dpadExtra" class="hidden">
+            <button class="dpad-btn sm" data-key="ArrowUp">回転</button>
+            <button class="dpad-btn sm" data-key="Space">⤓</button>
+          </div>
+          <button class="dpad-btn" data-key="ArrowRight">▶</button>
         </div>
       </div>
       <div id="gameOverlay">
@@ -108,13 +116,9 @@
           <div class="overlay-btn" id="submitScoreBtn">送信</div>
         </div>
       </div>
-    </div>
   </main>
 </div>
-
-<div id="updateToast" class="hidden">
-  最新版があります！<button id="reloadBtn">更新</button>
-</div>
+<div id="updateNotice">更新完了</div>
 <script src="js/firebase-config.js"></script>
 <script src="js/firebase-db.js"></script>
 <script src="js/app.js"></script>
@@ -125,6 +129,7 @@
 <script src="js/snake.js"></script>
 <script src="js/breakout.js"></script>
 <script src="js/game2048.js"></script>
+<script src="js/minesweeper.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
@@ -137,6 +142,7 @@ app.register('tetris', new TetrisGame());
 app.register('snake', new SnakeGame());
 app.register('breakout', new BreakoutGame());
 app.register('game2048', new Game2048());
+app.register('minesweeper', new MinesweeperGame());
 app.init();
 </script>
 </body>
