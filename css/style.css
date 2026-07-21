@@ -258,6 +258,71 @@ header h1 {
   pointer-events: auto;
 }
 
+/* D-Pad */
+#dpad {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#dpad:not(.hidden) {
+  display: flex;
+}
+
+.dpad-row {
+  display: flex;
+  gap: 4px;
+}
+
+.dpad-btn {
+  width: 52px;
+  height: 52px;
+  border: 2px solid rgba(233, 69, 96, 0.5);
+  border-radius: 12px;
+  background: rgba(22, 33, 62, 0.85);
+  color: #e94560;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.dpad-btn:active {
+  background: rgba(233, 69, 96, 0.3);
+  transform: scale(0.92);
+}
+
+.dpad-btn.sm {
+  width: 60px;
+  height: 40px;
+  font-size: 0.75em;
+}
+
+#dpadExtra {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+#dpadExtra:not(.hidden) {
+  display: flex;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #dpad { display: none !important; }
+}
+
 /* Leaderboard */
 .lb-container {
   margin-top: 20px;

@@ -17,6 +17,7 @@ class App {
     this.setupRestartButton();
     this.setupStartMessage();
     this.setupNameSubmit();
+    this.setupDpad();
     this.resizeCanvas();
     this.loadLeaderboard();
     window.addEventListener('resize', () => this.resizeCanvas());
@@ -124,6 +125,7 @@ class App {
     this.resizeCanvas();
     this.showStartMessage();
     this.updateControlsHint(name);
+    this.updateDpad(name);
     this.games[name].start();
   }
 
@@ -190,6 +192,27 @@ class App {
       game2048: '← ↑ → ↓ / WASD : スライド'
     };
     document.getElementById('controlsHint').textContent = hints[game] || '';
+  }
+
+  setupDpad() {
+    document.querySelectorAll('#dpad .dpad-btn').forEach(btn => {
+      const handler = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const key = btn.dataset.key;
+        if (this.currentGame) {
+          window.dispatchEvent(new KeyboardEvent('keydown', { code: key, key: key }));
+        }
+      };
+      btn.addEventListener('touchstart', handler, { passive: false });
+      btn.addEventListener('mousedown', handler);
+    });
+  }
+
+  updateDpad(game) {
+    const needs = { tetris: true, snake: true, game2048: true };
+    const dpad = document.getElementById('dpad');
+    dpad.classList.toggle('hidden', !needs[game]);
   }
 
   updateScoreDisplay(score) {

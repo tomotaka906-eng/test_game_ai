@@ -76,6 +76,18 @@
         <span id="scoreDisplay">Score: 0</span>
       </div>
       <canvas id="gameCanvas"></canvas>
+      <div id="dpad" class="hidden">
+        <button class="dpad-btn" data-key="ArrowUp">▲</button>
+        <div class="dpad-row">
+          <button class="dpad-btn" data-key="ArrowLeft">◀</button>
+          <button class="dpad-btn" data-key="ArrowDown">▼</button>
+          <button class="dpad-btn" data-key="ArrowRight">▶</button>
+        </div>
+        <div id="dpadExtra" class="hidden">
+          <button class="dpad-btn sm" data-key="KeyX">回転</button>
+          <button class="dpad-btn sm" data-key="Space">⤓</button>
+        </div>
+      </div>
       <div id="gameOverlay">
         <div id="startMsg">
           <div class="overlay-title">準備はいい？</div>
