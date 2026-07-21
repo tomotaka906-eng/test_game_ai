@@ -214,8 +214,8 @@ class CaveGame {
   spawnObstacle() {
     const W = this.canvas.width;
     const r = Math.random();
-    const cy = this.ceilingY + 10;
     const gy = this.groundY - 10;
+    const stalY = this.groundY - 54;
     if (r < 0.5) {
       this.obstacles.push({
         type: 'spike',
@@ -225,8 +225,8 @@ class CaveGame {
     } else if (r < 0.75) {
       this.obstacles.push({
         type: 'stalactite',
-        x: W, w: 20, h: 28,
-        y: cy
+        x: W, w: 24, h: 20,
+        y: stalY
       });
     } else {
       this.obstacles.push({
@@ -236,8 +236,8 @@ class CaveGame {
       });
       this.obstacles.push({
         type: 'stalactite',
-        x: W + 40, w: 20, h: 28,
-        y: cy
+        x: W + 40, w: 24, h: 20,
+        y: stalY
       });
     }
   }
@@ -375,19 +375,11 @@ class CaveGame {
       ctx.fill();
     } else {
       ctx.fillStyle = '#6d4c41';
-      ctx.beginPath();
-      ctx.moveTo(obs.x + obs.w / 2, obs.y);
-      ctx.lineTo(obs.x + obs.w, obs.y + obs.h);
-      ctx.lineTo(obs.x, obs.y + obs.h);
-      ctx.closePath();
-      ctx.fill();
+      ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+      ctx.fillStyle = '#5a3a2a';
+      ctx.fillRect(obs.x, obs.y, obs.w, 4);
       ctx.fillStyle = '#8d6e63';
-      ctx.beginPath();
-      ctx.moveTo(obs.x + obs.w / 2, obs.y + 2);
-      ctx.lineTo(obs.x + obs.w - 2, obs.y + obs.h - 2);
-      ctx.lineTo(obs.x + 2, obs.y + obs.h - 2);
-      ctx.closePath();
-      ctx.fill();
+      ctx.fillRect(obs.x + 2, obs.y + 6, obs.w - 4, obs.h - 8);
     }
   }
 
