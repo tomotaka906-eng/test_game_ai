@@ -36,7 +36,7 @@ class App {
           });
         });
       });
-      document.getElementById('reloadBtn').addEventListener('click', () => location.reload());
+      document.getElementById('reloadBtn').addEventListener('click', () => location.reload(true));
     }
   }
 
@@ -230,11 +230,11 @@ class App {
       if ('serviceWorker' in navigator) {
         caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).then(() => {
           navigator.serviceWorker.getRegistrations().then(regs => {
-            regs.forEach(r => r.unregister());
-          }).then(() => location.reload(true));
+            Promise.all(regs.map(r => r.unregister())).then(() => location.reload(true));
+          });
         });
       } else {
-        location.reload();
+        location.reload(true);
       }
     });
   }
