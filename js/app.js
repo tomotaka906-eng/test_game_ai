@@ -123,8 +123,9 @@ class App {
 
   restartGame() {
     if (this.currentGame) {
-      document.getElementById('gameOverlay').querySelectorAll('> div').forEach(d => d.classList.add('hidden'));
+      document.getElementById('restartBtn').blur();
       this.games[this.currentGame].restart();
+      this.showStartMessage();
     }
   }
 
