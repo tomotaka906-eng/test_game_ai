@@ -25,9 +25,9 @@ class App {
   loadScores() {
     try {
       const data = localStorage.getItem('mgc_scores');
-      return data ? JSON.parse(data) : { dino: 0, flappy: 0, cave: 0 };
+      return data ? JSON.parse(data) : { dino: 0, flappy: 0, cave: 0, tetris: 0 };
     } catch {
-      return { dino: 0, flappy: 0, cave: 0 };
+      return { dino: 0, flappy: 0, cave: 0, tetris: 0 };
     }
   }
 
@@ -41,6 +41,7 @@ class App {
     document.getElementById('hsDino').textContent = this.scores.dino;
     document.getElementById('hsFlappy').textContent = this.scores.flappy;
     document.getElementById('hsCave').textContent = this.scores.cave;
+    document.getElementById('hsTetris').textContent = this.scores.tetris;
   }
 
   setupMenu() {
@@ -114,7 +115,8 @@ class App {
     document.getElementById('gameTitle').textContent = {
       dino: 'Dino Runner',
       flappy: 'Flappy Bird',
-      cave: 'Cave Runner'
+      cave: 'Cave Runner',
+      tetris: 'Tetris'
     }[name];
     this.resizeCanvas();
     this.showStartMessage();

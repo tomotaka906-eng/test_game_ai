@@ -39,6 +39,12 @@
           <div class="card-desc">ジャンプ＆しゃがんで洞窟を攻略！</div>
           <div class="card-highscore">最高記録: <span id="hsCave">0</span></div>
         </div>
+        <div class="game-card" data-game="tetris">
+          <div class="card-icon">🧊</div>
+          <div class="card-title">Tetris</div>
+          <div class="card-desc">ブロックを揃えてラインを消せ！</div>
+          <div class="card-highscore">最高記録: <span id="hsTetris">0</span></div>
+        </div>
       </div>
     </div>
 
@@ -69,6 +75,7 @@
 <script src="js/dino.js"></script>
 <script src="js/flappy.js"></script>
 <script src="js/cave.js"></script>
+<script src="js/tetris.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
@@ -77,6 +84,7 @@ const app = new App();
 app.register('dino', new DinoGame());
 app.register('flappy', new FlappyGame());
 app.register('cave', new CaveGame());
+app.register('tetris', new TetrisGame());
 app.init();
 </script>
 </body>
