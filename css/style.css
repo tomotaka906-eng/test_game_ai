@@ -257,7 +257,27 @@ header h1 {
   transform: scale(0.95);
 }
 
-/* Name Input */
+#updateToast {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: #e94560;
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  z-index: 100;
+}
+#reloadBtn {
+  margin-left: 10px;
+  padding: 5px 10px;
+  background: white;
+  color: #e94560;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
 .name-input {
   display: block;
   width: 100%;
