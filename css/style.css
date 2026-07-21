@@ -197,6 +197,13 @@ header h1 {
   margin-bottom: 6px;
 }
 
+.controls-hint {
+  margin-top: 12px;
+  font-size: 0.78em;
+  color: #888;
+  line-height: 1.6;
+}
+
 #newRecord {
   color: #ffd700;
   font-weight: 700;

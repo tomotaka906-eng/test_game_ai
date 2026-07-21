@@ -122,6 +122,7 @@ class App {
     }[name];
     this.resizeCanvas();
     this.showStartMessage();
+    this.updateControlsHint(name);
     this.games[name].start();
   }
 
@@ -130,6 +131,7 @@ class App {
       document.getElementById('restartBtn').blur();
       this.games[this.currentGame].restart();
       this.showStartMessage();
+      this.updateControlsHint(this.currentGame);
     }
   }
 
@@ -174,6 +176,16 @@ class App {
     this.fb.submitScore(this.pendingScore.game, name, this.pendingScore.score);
     document.getElementById('nameOverlay').classList.add('hidden');
     this.pendingScore = null;
+  }
+
+  updateControlsHint(game) {
+    const hints = {
+      dino: 'Space / ↑ : ジャンプ  |  ↓ : しゃがむ',
+      flappy: 'Space / タップ : 羽ばたく',
+      cave: 'Space / ↑ : ジャンプ  |  ↓ : しゃがむ',
+      tetris: '← → : 移動  |  ↑ : 回転  |  ↓ : 落下  |  Space : 一気に落下'
+    };
+    document.getElementById('controlsHint').textContent = hints[game] || '';
   }
 
   updateScoreDisplay(score) {
