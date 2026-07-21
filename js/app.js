@@ -288,7 +288,8 @@ class App {
       if (scores.length === 0) continue;
       html += `<div class="lb-section"><div class="lb-title">${names[games.indexOf(g)]}</div>`;
       scores.forEach((s, i) => {
-        html += `<div class="lb-row"><span class="lb-rank">${i + 1}</span><span class="lb-name">${this.esc(s.name)}</span><span class="lb-score">${s.score}</span></div>`;
+        const safeScore = Number.isFinite(Number(s.score)) ? Math.trunc(Number(s.score)) : 0;
+        html += `<div class="lb-row"><span class="lb-rank">${i + 1}</span><span class="lb-name">${this.esc(s.name)}</span><span class="lb-score">${safeScore}</span></div>`;
       });
       html += '</div>';
     }
