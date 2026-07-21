@@ -80,45 +80,38 @@ class CaveGame {
         this.duck(false);
       }
     };
-    this._onTouch = (e) => {
+    this._onTouchStart = (e) => {
       e.preventDefault();
       if (this.gameOver) return;
-      const touch = e.touches ? e.touches[0] : e;
       if (!this.started) {
         this.startGame();
         return;
       }
-      if (!this._lastTouchY) {
-        this._lastTouchY = touch.clientY;
-        this.jump();
-        return;
-      }
-      const dy = touch.clientY - this._lastTouchY;
-      if (dy > 30) {
+      const rect = this.canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      const relativeY = touch.clientY - rect.top;
+      const h = rect.height;
+      if (relativeY > h * 0.6) {
         this.duck(true);
-        setTimeout(() => this.duck(false), 300);
       } else {
         this.jump();
       }
-      this._lastTouchY = touch.clientY;
     };
-    this._onTouchEnd = () => {
-      this._lastTouchY = null;
+    this._onTouchEnd = (e) => {
+      e.preventDefault();
+      this.duck(false);
     };
     window.addEventListener('keydown', this._onKeyDown);
     window.addEventListener('keyup', this._onKeyUp);
-    this.canvas.addEventListener('touchstart', this._onTouch);
-    this.canvas.addEventListener('touchmove', this._onTouch);
+    this.canvas.addEventListener('touchstart', this._onTouchStart);
     this.canvas.addEventListener('touchend', this._onTouchEnd);
   }
 
   removeInput() {
     window.removeEventListener('keydown', this._onKeyDown);
     window.removeEventListener('keyup', this._onKeyUp);
-    this.canvas.removeEventListener('touchstart', this._onTouch);
-    this.canvas.removeEventListener('touchmove', this._onTouch);
+    this.canvas.removeEventListener('touchstart', this._onTouchStart);
     this.canvas.removeEventListener('touchend', this._onTouchEnd);
-    this._lastTouchY = null;
   }
 
   startGame() {

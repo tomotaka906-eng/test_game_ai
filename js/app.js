@@ -207,7 +207,12 @@ class App {
         e.stopPropagation();
         const key = btn.dataset.key;
         if (this.currentGame) {
-          window.dispatchEvent(new KeyboardEvent('keydown', { code: key, key: key }));
+          const game = this.games[this.currentGame];
+          if (!game.started && game.startGame) {
+            game.startGame();
+          } else {
+            window.dispatchEvent(new KeyboardEvent('keydown', { code: key, key: key }));
+          }
         }
       };
       btn.addEventListener('touchstart', handler, { passive: false });

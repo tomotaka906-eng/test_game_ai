@@ -156,6 +156,7 @@ class TetrisGame {
     if (this.gameOver || !this.started || !this.piece) return;
     if (!this.collides(this.piece.shape, this.piece.x - 1, this.piece.y)) {
       this.piece.x--;
+      this.lockDelay = 0;
     }
   }
 
@@ -163,6 +164,7 @@ class TetrisGame {
     if (this.gameOver || !this.started || !this.piece) return;
     if (!this.collides(this.piece.shape, this.piece.x + 1, this.piece.y)) {
       this.piece.x++;
+      this.lockDelay = 0;
     }
   }
 
@@ -193,21 +195,25 @@ class TetrisGame {
     let kickX = 0;
     if (!this.collides(rotated, this.piece.x, this.piece.y)) {
       this.piece.shape = rotated;
+      this.lockDelay = 0;
       return;
     }
     if (!this.collides(rotated, this.piece.x - 1, this.piece.y)) {
       this.piece.shape = rotated;
       this.piece.x--;
+      this.lockDelay = 0;
       return;
     }
     if (!this.collides(rotated, this.piece.x + 1, this.piece.y)) {
       this.piece.shape = rotated;
       this.piece.x++;
+      this.lockDelay = 0;
       return;
     }
     if (!this.collides(rotated, this.piece.x, this.piece.y - 1)) {
       this.piece.shape = rotated;
       this.piece.y--;
+      this.lockDelay = 0;
       return;
     }
   }
@@ -319,15 +325,24 @@ class TetrisGame {
   }
 
   update(dt) {
-    if (this.gameOver || !this.started) return;
+    if (this.gameOver || !this.started || !this.piece) return;
     this.frame++;
+
+    // 落下処理
     this.dropCounter += dt;
     if (this.dropCounter >= this.dropInterval) {
-      if (!this.moveDown()) {
-        this.lockDelay += this.dropInterval;
-        if (this.lockDelay > 500) this.lock();
-      }
+      this.moveDown();
       this.dropCounter = 0;
+    }
+
+    // 接地時のロック遅延処理 (500ms猶予)
+    if (this.collides(this.piece.shape, this.piece.x, this.piece.y + 1)) {
+      this.lockDelay += dt;
+      if (this.lockDelay >= 500) {
+        this.lock();
+      }
+    } else {
+      this.lockDelay = 0;
     }
   }
 
