@@ -84,17 +84,24 @@
       </div>
       <canvas id="gameCanvas"></canvas>
       <div id="dpad" class="hidden">
-        <div id="dpadLeft">
-          <button class="dpad-btn" data-key="ArrowLeft">◀</button>
-          <button class="dpad-btn" data-key="ArrowDown">▼</button>
-          <button class="dpad-btn" data-key="ArrowUp">▲</button>
+        <div id="dpadCol1" class="dpad-col">
+          <button class="dpad-btn dpad-btn-left" data-key="ArrowLeft">◀</button>
         </div>
-        <div id="dpadRight">
-          <div id="dpadExtra" class="hidden">
-            <button class="dpad-btn sm" data-key="ArrowUp">回転</button>
-            <button class="dpad-btn sm" data-key="Space">⤓</button>
+        <div id="dpadCol2" class="dpad-col">
+          <button class="dpad-btn dpad-btn-up" data-key="ArrowUp">▲</button>
+          <div class="dpad-col-spacer"></div>
+          <button class="dpad-btn dpad-btn-down" data-key="ArrowDown">▼</button>
+        </div>
+        <div id="dpadCol3" class="dpad-col">
+          <div id="dpadExtra" class="hidden tetris-extra">
+            <button class="dpad-btn dpad-btn-hdrop" data-key="Space">⤓</button>
+            <div class="dpad-hdrop-gap"></div>
+            <button class="dpad-btn dpad-btn-rotate" data-key="ArrowUp">回転</button>
           </div>
-          <button class="dpad-btn" data-key="ArrowRight">▶</button>
+        </div>
+        <div id="dpadCol4" class="dpad-col">
+          <div id="dpadExtraRight" class="hidden tetris-extra-right"></div>
+          <button class="dpad-btn dpad-btn-right" data-key="ArrowRight">▶</button>
         </div>
       </div>
       <div id="gameOverlay">
