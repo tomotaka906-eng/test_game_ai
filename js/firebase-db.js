@@ -2,7 +2,11 @@ class FirebaseDB {
   constructor() {
     this.config = typeof FIREBASE_CONFIG !== 'undefined' ? FIREBASE_CONFIG : null;
     this.enabled = !!this.config;
-    this.cache = { dino: [], flappy: [], cave: [], tetris: [] };
+    this.cache = this.emptyCache();
+  }
+
+  emptyCache() {
+    return { dino: [], flappy: [], cave: [], tetris: [] };
   }
 
   get scoresUrl() {
@@ -45,6 +49,6 @@ class FirebaseDB {
   }
 
   clearCache() {
-    this.cache = { dino: [], flappy: [], cave: [], tetris: [] };
+    this.cache = this.emptyCache();
   }
 }

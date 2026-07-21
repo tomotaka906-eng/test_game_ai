@@ -1,13 +1,4 @@
-class Game2048 {
-  constructor() {
-    this.app = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.animId = null;
-    this.running = false;
-    this.reset();
-  }
-
+class Game2048 extends BaseGame {
   reset() {
     this.size = 4;
     this.grid = [];
@@ -27,9 +18,7 @@ class Game2048 {
 
   start() {
     this.reset();
-    this.canvas = this.app.canvas;
-    this.ctx = this.app.ctx;
-    this.highScore = this.app.scores.game2048;
+    this.initCanvas();
     const W = this.canvas.width;
     const H = this.canvas.height;
     const size = Math.min(W, H) * 0.85;
@@ -41,22 +30,6 @@ class Game2048 {
     this.setupInput();
     this.running = true;
     this.render();
-  }
-
-  stop() {
-    this.running = false;
-    if (this.animId) cancelAnimationFrame(this.animId);
-    this.removeInput();
-  }
-
-  restart() {
-    this.stop();
-    this.start();
-  }
-
-  startGame() {
-    this.started = true;
-    document.getElementById('startMsg').classList.add('hidden');
   }
 
   newGame() {
@@ -188,13 +161,13 @@ class Game2048 {
       const dx = touch.clientX - this._touchStart.x;
       const dy = touch.clientY - this._touchStart.y;
       this._touchStart = null;
-      if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
+      const dir = GameUtils.swipeDir(dx, dy);
+      if (!dir) return;
       let moved = false;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        moved = dx > 0 ? this.moveRight() : this.moveLeft();
-      } else {
-        moved = dy > 0 ? this.moveDown() : this.moveUp();
-      }
+      if (dir === 'right') moved = this.moveRight();
+      else if (dir === 'left') moved = this.moveLeft();
+      else if (dir === 'down') moved = this.moveDown();
+      else if (dir === 'up') moved = this.moveUp();
       if (moved) {
         this.addRandom();
         if (!this.canMove()) { this.endGame(); return; }
@@ -222,9 +195,7 @@ class Game2048 {
   }
 
   endGame() {
-    this.gameOver = true;
-    const isNew = this.app.recordScore('game2048', this.score);
-    this.app.showGameOver(this.score, isNew);
+    this.finishGame(this.score);
   }
 
   render() {
@@ -232,9 +203,7 @@ class Game2048 {
     const ctx = this.ctx;
     const W = this.canvas.width;
     const H = this.canvas.height;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#0a0a1a';
-    ctx.fillRect(0, 0, W, H);
+    GameUtils.clearCanvas(ctx, W, H, '#0a0a1a');
 
     const colors = {
       0: '#1a1a2e', 2: '#eee4da', 4: '#ede0c8',

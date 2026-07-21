@@ -1,13 +1,4 @@
-class TetrisGame {
-  constructor() {
-    this.app = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.animId = null;
-    this.running = false;
-    this.reset();
-  }
-
+class TetrisGame extends BaseGame {
   reset() {
     this.ROWS = 20;
     this.COLS = 10;
@@ -45,33 +36,17 @@ class TetrisGame {
 
   start() {
     this.reset();
-    this.canvas = this.app.canvas;
-    this.ctx = this.app.ctx;
-    this.highScore = this.app.scores.tetris;
+    this.initCanvas();
     this.calcDimensions();
     this.initBoard();
     this.nextBag = this.shuffleBag();
     this.next = this.getNextPiece();
     this.setupInput();
-    this.running = true;
-    this.lastTime = performance.now();
-    this.loop(this.lastTime);
-  }
-
-  stop() {
-    this.running = false;
-    if (this.animId) cancelAnimationFrame(this.animId);
-    this.removeInput();
-  }
-
-  restart() {
-    this.stop();
-    this.start();
+    this.startLoop();
   }
 
   startGame() {
-    this.started = true;
-    document.getElementById('startMsg').classList.add('hidden');
+    super.startGame();
     this.spawnPiece();
   }
 
@@ -315,15 +290,6 @@ class TetrisGame {
     this._touchStart = null;
   }
 
-  loop(time) {
-    if (!this.running) return;
-    const dt = time - this.lastTime;
-    this.lastTime = time;
-    this.update(dt);
-    this.render();
-    this.animId = requestAnimationFrame((t) => this.loop(t));
-  }
-
   update(dt) {
     if (this.gameOver || !this.started || !this.piece) return;
     this.frame++;
@@ -347,19 +313,14 @@ class TetrisGame {
   }
 
   endGame() {
-    this.gameOver = true;
-    const isNew = this.app.recordScore('tetris', this.score);
-    this.app.showGameOver(this.score, isNew);
+    this.finishGame(this.score);
   }
 
   render() {
     const ctx = this.ctx;
     const W = this.canvas.width;
     const H = this.canvas.height;
-    ctx.clearRect(0, 0, W, H);
-
-    ctx.fillStyle = '#0a0a1a';
-    ctx.fillRect(0, 0, W, H);
+    GameUtils.clearCanvas(ctx, W, H, '#0a0a1a');
 
     this.drawBoard(ctx);
     this.drawGhost(ctx);
@@ -471,10 +432,6 @@ class TetrisGame {
   }
 
   drawScore(ctx, W) {
-    ctx.fillStyle = '#e94560';
-    ctx.font = `bold ${Math.floor(14 * (W / 600))}px monospace`;
-    ctx.textAlign = 'right';
-    ctx.fillText(`HI ${this.highScore}`, W - 8, 24);
-    ctx.fillText(`${this.score}`, W - 8, 42);
+    GameUtils.drawHiScore(ctx, W, '#e94560', this.highScore, this.score);
   }
 }

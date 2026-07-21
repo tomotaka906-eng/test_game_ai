@@ -1,13 +1,4 @@
-class DinoGame {
-  constructor() {
-    this.app = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.animId = null;
-    this.running = false;
-    this.reset();
-  }
-
+class DinoGame extends BaseGame {
   reset() {
     this.dino = {
       x: 0, y: 0, w: 44, h: 47,
@@ -39,9 +30,7 @@ class DinoGame {
 
   start() {
     this.reset();
-    this.canvas = this.app.canvas;
-    this.ctx = this.app.ctx;
-    this.highScore = this.app.scores.dino;
+    this.initCanvas();
     this.groundY = Math.floor(this.canvas.height * 0.75);
     this.dino.x = Math.floor(this.canvas.width * 0.12);
     this.dino.y = this.groundY - this.dino.h;
@@ -55,19 +44,7 @@ class DinoGame {
       });
     }
     this.setupInput();
-    this.running = true;
-    this.loop(0);
-  }
-
-  stop() {
-    this.running = false;
-    if (this.animId) cancelAnimationFrame(this.animId);
-    this.removeInput();
-  }
-
-  restart() {
-    this.stop();
-    this.start();
+    this.startLoop();
   }
 
   setupInput() {
@@ -125,11 +102,6 @@ class DinoGame {
     this.canvas.removeEventListener('touchend', this._onTouchEnd);
   }
 
-  startGame() {
-    this.started = true;
-    document.getElementById('startMsg').classList.add('hidden');
-  }
-
   jump() {
     if (this.dino.grounded) {
       this.dino.vy = -10;
@@ -144,14 +116,7 @@ class DinoGame {
     }
   }
 
-  loop(timestamp) {
-    if (!this.running) return;
-    this.update(timestamp);
-    this.render();
-    this.animId = requestAnimationFrame((t) => this.loop(t));
-  }
-
-  update(ts) {
+  update(dt, ts) {
     if (this.gameOver || !this.started) return;
 
     this.totalFrames++;
@@ -278,13 +243,11 @@ class DinoGame {
     const oy = obs.y + shrink;
     const ow = obs.w - shrink * 2;
     const oh = obs.h - shrink * 2;
-    return dx < ox + ow && dx + dw > ox && dy < oy + oh && dy + dh > oy;
+    return GameUtils.rectsOverlap(dx, dy, dw, dh, ox, oy, ow, oh);
   }
 
   endGame() {
-    this.gameOver = true;
-    const isNew = this.app.recordScore('dino', this.displayScore);
-    this.app.showGameOver(this.displayScore, isNew);
+    this.finishGame(this.displayScore);
   }
 
   render() {
@@ -298,8 +261,7 @@ class DinoGame {
     const accentColor = this.nightMode ? '#555' : '#0f3460';
     const textColor = this.nightMode ? '#888' : '#e94560';
 
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, W, H);
+    GameUtils.clearCanvas(ctx, W, H, bgColor);
 
     // フラッシュ演出 (100点ごと)
     if (this.flashActive) {
@@ -414,10 +376,6 @@ class DinoGame {
   }
 
   drawScore(ctx, W, color) {
-    ctx.fillStyle = color;
-    ctx.font = `bold ${Math.floor(14 * (this.canvas.width / 600))}px monospace`;
-    ctx.textAlign = 'right';
-    ctx.fillText(`HI ${this.highScore}`, W - 8, 24);
-    ctx.fillText(`${this.displayScore}`, W - 8, 42);
+    GameUtils.drawHiScore(ctx, W, color, this.highScore, this.displayScore);
   }
 }

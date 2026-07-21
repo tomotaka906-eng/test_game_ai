@@ -1,3 +1,14 @@
+const GAME_DEFS = [
+  { key: 'dino', title: 'Dino Runner' },
+  { key: 'flappy', title: 'Flappy Bird' },
+  { key: 'cave', title: 'Cave Runner' },
+  { key: 'tetris', title: 'Tetris' },
+  { key: 'snake', title: 'Snake' },
+  { key: 'breakout', title: 'Breakout' },
+  { key: 'game2048', title: '2048' },
+  { key: 'minesweeper', title: 'Minesweeper' }
+];
+
 class App {
   constructor() {
     this.canvas = document.getElementById('gameCanvas');
@@ -58,14 +69,19 @@ class App {
   register(name, gameInstance) {
     this.games[name] = gameInstance;
     gameInstance.app = this;
+    gameInstance.key = name;
+  }
+
+  defaultScores() {
+    return GAME_DEFS.reduce((acc, g) => { acc[g.key] = 0; return acc; }, {});
   }
 
   loadScores() {
     try {
       const data = localStorage.getItem('mgc_scores');
-      return data ? JSON.parse(data) : { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0, minesweeper: 0 };
+      return data ? JSON.parse(data) : this.defaultScores();
     } catch {
-      return { dino: 0, flappy: 0, cave: 0, tetris: 0, snake: 0, breakout: 0, game2048: 0, minesweeper: 0 };
+      return this.defaultScores();
     }
   }
 
@@ -76,9 +92,9 @@ class App {
   }
 
   updateHighScoreLabels() {
-    ['dino','flappy','cave','tetris','snake','breakout','game2048','minesweeper'].forEach(g => {
-      const el = document.getElementById('hs' + g.charAt(0).toUpperCase() + g.slice(1));
-      if (el) el.textContent = this.scores[g] || 0;
+    GAME_DEFS.forEach(({ key }) => {
+      const el = document.getElementById('hs' + key.charAt(0).toUpperCase() + key.slice(1));
+      if (el) el.textContent = this.scores[key] || 0;
     });
   }
 
@@ -143,11 +159,8 @@ class App {
     this.currentGame = name;
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('gameScreen').classList.add('active');
-    document.getElementById('gameTitle').textContent = {
-      dino: 'Dino Runner', flappy: 'Flappy Bird',
-      cave: 'Cave Runner', tetris: 'Tetris',
-      snake: 'Snake', breakout: 'Breakout', game2048: '2048', minesweeper: 'Minesweeper'
-    }[name];
+    const def = GAME_DEFS.find(g => g.key === name);
+    document.getElementById('gameTitle').textContent = def ? def.title : '';
     this.resizeCanvas();
     this.showStartMessage();
     this.updateControlsHint(name);
@@ -280,13 +293,11 @@ class App {
   async loadLeaderboard() {
     const container = document.getElementById('leaderboard');
     if (!container) return;
-    const games = ['dino','flappy','cave','tetris','snake','breakout','game2048','minesweeper'];
-    const names = ['Dino Runner','Flappy Bird','Cave Runner','Tetris','Snake','Breakout','2048','Minesweeper'];
     let html = '';
-    for (const g of games) {
-      const scores = await this.fb.getTopScores(g, 3);
+    for (const { key, title } of GAME_DEFS) {
+      const scores = await this.fb.getTopScores(key, 3);
       if (scores.length === 0) continue;
-      html += `<div class="lb-section"><div class="lb-title">${names[games.indexOf(g)]}</div>`;
+      html += `<div class="lb-section"><div class="lb-title">${title}</div>`;
       scores.forEach((s, i) => {
         html += `<div class="lb-row"><span class="lb-rank">${i + 1}</span><span class="lb-name">${this.esc(s.name)}</span><span class="lb-score">${s.score}</span></div>`;
       });

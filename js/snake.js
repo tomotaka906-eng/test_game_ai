@@ -1,13 +1,4 @@
-class SnakeGame {
-  constructor() {
-    this.app = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.animId = null;
-    this.running = false;
-    this.reset();
-  }
-
+class SnakeGame extends BaseGame {
   reset() {
     this.gridSize = 20;
     this.snake = [];
@@ -28,9 +19,7 @@ class SnakeGame {
 
   start() {
     this.reset();
-    this.canvas = this.app.canvas;
-    this.ctx = this.app.ctx;
-    this.highScore = this.app.scores.snake;
+    this.initCanvas();
     const W = this.canvas.width;
     const H = this.canvas.height;
     this.cols = Math.floor(W * 0.85 / this.gridSize);
@@ -42,25 +31,7 @@ class SnakeGame {
     this.snake = [{ x: cx, y: cy }, { x: cx - 1, y: cy }, { x: cx - 2, y: cy }];
     this.spawnFood();
     this.setupInput();
-    this.running = true;
-    this.lastTime = performance.now();
-    this.loop(this.lastTime);
-  }
-
-  stop() {
-    this.running = false;
-    if (this.animId) cancelAnimationFrame(this.animId);
-    this.removeInput();
-  }
-
-  restart() {
-    this.stop();
-    this.start();
-  }
-
-  startGame() {
-    this.started = true;
-    document.getElementById('startMsg').classList.add('hidden');
+    this.startLoop();
   }
 
   spawnFood() {
@@ -102,15 +73,11 @@ class SnakeGame {
       const touch = e.changedTouches[0];
       const dx = touch.clientX - this._touchStart.x;
       const dy = touch.clientY - this._touchStart.y;
-      if (Math.abs(dx) > 20 || Math.abs(dy) > 20) {
-        if (Math.abs(dx) > Math.abs(dy)) {
-          if (dx > 0 && this.dir.x !== -1) this.nextDir = { x: 1, y: 0 };
-          else if (dx < 0 && this.dir.x !== 1) this.nextDir = { x: -1, y: 0 };
-        } else {
-          if (dy > 0 && this.dir.y !== -1) this.nextDir = { x: 0, y: 1 };
-          else if (dy < 0 && this.dir.y !== 1) this.nextDir = { x: 0, y: -1 };
-        }
-      }
+      const dir = GameUtils.swipeDir(dx, dy);
+      if (dir === 'right' && this.dir.x !== -1) this.nextDir = { x: 1, y: 0 };
+      else if (dir === 'left' && this.dir.x !== 1) this.nextDir = { x: -1, y: 0 };
+      else if (dir === 'down' && this.dir.y !== -1) this.nextDir = { x: 0, y: 1 };
+      else if (dir === 'up' && this.dir.y !== 1) this.nextDir = { x: 0, y: -1 };
       this._touchStart = null;
     };
     window.addEventListener('keydown', this._onKeyDown);
@@ -123,15 +90,6 @@ class SnakeGame {
     this.canvas.removeEventListener('touchstart', this._onTouchStart);
     this.canvas.removeEventListener('touchend', this._onTouchEnd);
     this._touchStart = null;
-  }
-
-  loop(time) {
-    if (!this.running) return;
-    const dt = time - this.lastTime;
-    this.lastTime = time;
-    this.update(dt);
-    this.render();
-    this.animId = requestAnimationFrame((t) => this.loop(t));
   }
 
   update(dt) {
@@ -155,18 +113,14 @@ class SnakeGame {
   }
 
   endGame() {
-    this.gameOver = true;
-    const isNew = this.app.recordScore('snake', this.score);
-    this.app.showGameOver(this.score, isNew);
+    this.finishGame(this.score);
   }
 
   render() {
     const ctx = this.ctx;
     const W = this.canvas.width;
     const H = this.canvas.height;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#0a0a1a';
-    ctx.fillRect(0, 0, W, H);
+    GameUtils.clearCanvas(ctx, W, H, '#0a0a1a');
 
     const g = this.gridSize;
     ctx.fillStyle = '#111128';

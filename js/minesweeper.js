@@ -1,13 +1,4 @@
-class MinesweeperGame {
-  constructor() {
-    this.app = null;
-    this.canvas = null;
-    this.ctx = null;
-    this.animId = null;
-    this.running = false;
-    this.reset();
-  }
-
+class MinesweeperGame extends BaseGame {
   reset() {
     this.ROWS = 10;
     this.COLS = 10;
@@ -35,9 +26,7 @@ class MinesweeperGame {
 
   start() {
     this.reset();
-    this.canvas = this.app.canvas;
-    this.ctx = this.app.ctx;
-    this.highScore = this.app.scores.minesweeper;
+    this.initCanvas();
     this.calcDimensions();
     this.initGrid();
     this.setupInput();
@@ -46,21 +35,13 @@ class MinesweeperGame {
   }
 
   stop() {
-    this.running = false;
-    if (this.animId) cancelAnimationFrame(this.animId);
+    super.stop();
     if (this.timerInterval) clearInterval(this.timerInterval);
-    this.removeInput();
-  }
-
-  restart() {
-    this.stop();
-    this.start();
   }
 
   startGame() {
     if (this.started) return;
-    this.started = true;
-    document.getElementById('startMsg').classList.add('hidden');
+    super.startGame();
     this.startTime = Date.now();
     this.timerInterval = setInterval(() => {
       if (!this.gameOver && !this.won) {
@@ -177,12 +158,12 @@ class MinesweeperGame {
         }
       }
       this.render();
-      const isNew = this.app.recordScore('minesweeper', 0);
+      const isNew = this.app.recordScore(this.key, 0);
       setTimeout(() => this.app.showGameOver(0, isNew), 600);
     } else {
       const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
       this.score = Math.max(100, Math.floor(10000 / (elapsed + 10)));
-      const isNew = this.app.recordScore('minesweeper', this.score);
+      const isNew = this.app.recordScore(this.key, this.score);
       setTimeout(() => this.app.showGameOver(this.score, isNew), 400);
     }
   }
@@ -228,9 +209,7 @@ class MinesweeperGame {
       this.longPressTriggered = false;
       this.longPressTimer = setTimeout(() => {
         if (!this._touchStart) return;
-        const rect = this.canvas.getBoundingClientRect();
-        const x = (this._touchStart.x - rect.left) * (this.canvas.width / rect.width);
-        const y = (this._touchStart.y - rect.top) * (this.canvas.height / rect.height);
+        const { x, y } = GameUtils.canvasPoint(this.canvas, this._touchStart.x, this._touchStart.y);
         const c = Math.floor((x - this.ox) / this.cellSize);
         const r = Math.floor((y - this.oy) / this.cellSize);
         if (r >= 0 && r < this.ROWS && c >= 0 && c < this.COLS) {
@@ -269,9 +248,7 @@ class MinesweeperGame {
   }
 
   getCellFromPoint(clientX, clientY) {
-    const rect = this.canvas.getBoundingClientRect();
-    const x = (clientX - rect.left) * (this.canvas.width / rect.width);
-    const y = (clientY - rect.top) * (this.canvas.height / rect.height);
+    const { x, y } = GameUtils.canvasPoint(this.canvas, clientX, clientY);
     const c = Math.floor((x - this.ox) / this.cellSize);
     const r = Math.floor((y - this.oy) / this.cellSize);
     if (r < 0 || r >= this.ROWS || c < 0 || c >= this.COLS) return null;
@@ -293,9 +270,7 @@ class MinesweeperGame {
     const ctx = this.ctx;
     const W = this.canvas.width;
     const H = this.canvas.height;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = '#0a0a1a';
-    ctx.fillRect(0, 0, W, H);
+    GameUtils.clearCanvas(ctx, W, H, '#0a0a1a');
 
     for (let r = 0; r < this.ROWS; r++) {
       for (let c = 0; c < this.COLS; c++) {
