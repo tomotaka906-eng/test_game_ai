@@ -307,3 +307,8 @@ class FlappyGame {
     ctx.fillText(`${this.score}`, W - 8, 42);
   }
 }
+
+// Export for Node-based unit tests; harmless in the browser (no `module` global there).
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = FlappyGame;
+}

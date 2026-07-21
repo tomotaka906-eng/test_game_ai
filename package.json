@@ -1,0 +1,10 @@
+{
+  "name": "test_game_ai",
+  "version": "1.0.0",
+  "description": "Offline mini-game collection (PWA)",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage"
+  }
+}
