@@ -70,14 +70,14 @@ class App {
   setupMenu() {
     document.querySelectorAll('.game-card').forEach(card => {
       card.addEventListener('click', () => this.startGame(card.dataset.game));
-      let touchY = 0;
+      let touchStartY = 0;
       card.addEventListener('touchstart', (e) => {
-        touchY = e.touches[0].clientY;
-      }, { passive: true });
+        touchStartY = e.touches[0].clientY;
+        e.preventDefault();
+      }, { passive: false });
       card.addEventListener('touchend', (e) => {
-        const dy = Math.abs(e.changedTouches[0].clientY - touchY);
+        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
         if (dy < 10) {
-          e.preventDefault();
           this.startGame(card.dataset.game);
         }
       });
@@ -91,7 +91,7 @@ class App {
       }
     };
     msg.addEventListener('click', handler);
-    msg.addEventListener('touchend', (e) => { e.preventDefault(); handler(); });
+    msg.addEventListener('touchstart', (e) => { e.preventDefault(); handler(); }, { passive: false });
   }
 
   setupBackButton() {

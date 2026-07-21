@@ -89,6 +89,7 @@ header h1 {
   flex-direction: column;
   padding: 20px 16px;
   overflow-y: auto;
+  touch-action: none;
 }
 
 .game-cards {
