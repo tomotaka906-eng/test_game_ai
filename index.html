@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="description" content="オフラインで遊べるミニゲームコレクション">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<title>Mini Game Collection</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Mini Games</h1>
+    <span id="highScoreLabel"></span>
+  </header>
+
+  <main id="gameArea">
+    <div id="menuScreen" class="screen active">
+      <div class="game-cards">
+        <div class="game-card" data-game="dino">
+          <div class="card-icon">🦖</div>
+          <div class="card-title">Dino Runner</div>
+          <div class="card-desc">ジャンプしてサボテンを避けろ！</div>
+          <div class="card-highscore">最高記録: <span id="hsDino">0</span></div>
+        </div>
+        <div class="game-card" data-game="flappy">
+          <div class="card-icon">🐦</div>
+          <div class="card-title">Flappy Bird</div>
+          <div class="card-desc">タップで飛び続けろ！</div>
+          <div class="card-highscore">最高記録: <span id="hsFlappy">0</span></div>
+        </div>
+        <div class="game-card" data-game="cave">
+          <div class="card-icon">🦇</div>
+          <div class="card-title">Cave Runner</div>
+          <div class="card-desc">ジャンプ＆しゃがんで洞窟を攻略！</div>
+          <div class="card-highscore">最高記録: <span id="hsCave">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameScreen" class="screen">
+      <div id="gameHeader">
+        <button id="backBtn" aria-label="戻る">←</button>
+        <span id="gameTitle">Game</span>
+        <span id="scoreDisplay">Score: 0</span>
+      </div>
+      <canvas id="gameCanvas"></canvas>
+      <div id="gameOverlay">
+        <div id="startMsg">
+          <div class="overlay-title">準備はいい？</div>
+          <div class="overlay-sub">タップまたはスペースキーでスタート！</div>
+        </div>
+        <div id="gameoverMsg" class="hidden">
+          <div class="overlay-title">ゲームオーバー</div>
+          <div class="overlay-sub" id="finalScore">Score: 0</div>
+          <div class="overlay-sub" id="newRecord" class="hidden">✨ NEW RECORD! ✨</div>
+          <div class="overlay-btn" id="restartBtn">もう一度遊ぶ</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/dino.js"></script>
+<script src="js/flappy.js"></script>
+<script src="js/cave.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+const app = new App();
+app.register('dino', new DinoGame());
+app.register('flappy', new FlappyGame());
+app.register('cave', new CaveGame());
+app.init();
+</script>
+</body>
+</html>

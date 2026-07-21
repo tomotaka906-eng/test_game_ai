@@ -1,0 +1,23 @@
+{
+  "name": "Mini Game Collection",
+  "short_name": "Mini Games",
+  "description": "オフラインで遊べるミニゲームコレクション - Dino Runner, Flappy Bird, Cave Runner",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
