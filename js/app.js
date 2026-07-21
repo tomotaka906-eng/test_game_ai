@@ -35,6 +35,7 @@ class App {
     if (sessionStorage.getItem('mgc_updated')) {
       sessionStorage.removeItem('mgc_updated');
       const el = document.getElementById('updateNotice');
+      if (!el) return;
       requestAnimationFrame(() => el.classList.add('show'));
       setTimeout(() => el.classList.remove('show'), 3000);
     }
@@ -50,8 +51,10 @@ class App {
         window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
       });
       navigator.serviceWorker.register('sw.js').then(reg => {
-        setInterval(() => reg.update(), 60 * 1000);
-      });
+        setInterval(() => {
+          reg.update().catch(err => console.error('Service worker update failed:', err));
+        }, 60 * 1000);
+      }).catch(err => console.error('Service worker registration failed:', err));
     }
   }
 
@@ -135,7 +138,7 @@ class App {
     }
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('menuScreen').classList.add('active');
-    document.getElementById('gameOverlay').querySelectorAll('> div').forEach(d => d.classList.add('hidden'));
+    document.getElementById('gameOverlay').querySelectorAll(':scope > div').forEach(d => d.classList.add('hidden'));
     this.loadLeaderboard();
   }
 
@@ -152,7 +155,12 @@ class App {
     this.showStartMessage();
     this.updateControlsHint(name);
     this.updateDpad(name);
-    try { this.games[name].start(); } catch(e) { alert('Error: ' + e.message); }
+    try {
+      this.games[name].start();
+    } catch (e) {
+      console.error(`Failed to start game "${name}":`, e);
+      alert('Error: ' + e.message);
+    }
   }
 
   restartGame() {
@@ -197,14 +205,22 @@ class App {
     setTimeout(() => input.focus(), 100);
   }
 
-  submitHighScore(name) {
+  async submitHighScore(name) {
     if (!this.pendingScore) return;
     name = name.slice(0, 12) || 'Anonymous';
     this.playerName = name;
-    try { localStorage.setItem('mgc_name', name); } catch {}
-    this.fb.submitScore(this.pendingScore.game, name, this.pendingScore.score);
+    try {
+      localStorage.setItem('mgc_name', name);
+    } catch (err) {
+      console.warn('Failed to persist player name:', err);
+    }
+    const { game, score } = this.pendingScore;
     document.getElementById('nameOverlay').classList.add('hidden');
     this.pendingScore = null;
+    const ok = await this.fb.submitScore(game, name, score);
+    if (!ok) {
+      console.error(`Failed to submit high score for "${game}" (${name}: ${score}).`);
+    }
   }
 
   updateControlsHint(game) {
@@ -245,11 +261,12 @@ class App {
     document.getElementById('updateBtn').addEventListener('click', () => {
       const bustUrl = window.location.href.split('?')[0] + '?t=' + Date.now();
       if ('serviceWorker' in navigator) {
-        caches.keys().then(names => Promise.all(names.map(n => caches.delete(n)))).then(() => {
-          navigator.serviceWorker.getRegistrations().then(regs => {
-            Promise.all(regs.map(r => r.unregister())).then(() => { window.location.href = bustUrl; });
-          });
-        });
+        caches.keys()
+          .then(names => Promise.all(names.map(n => caches.delete(n))))
+          .then(() => navigator.serviceWorker.getRegistrations())
+          .then(regs => Promise.all(regs.map(r => r.unregister())))
+          .catch(err => console.error('Failed to clear caches/service workers during update:', err))
+          .finally(() => { window.location.href = bustUrl; });
       } else {
         window.location.href = bustUrl;
       }

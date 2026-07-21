@@ -16,9 +16,14 @@ class FirebaseDB {
         method: 'POST',
         body: JSON.stringify({ name, score, ts: Date.now() })
       });
+      if (!res.ok) {
+        console.error(`Firebase submitScore failed for "${game}": ${res.status} ${res.statusText}`);
+        return false;
+      }
       this.cache[game] = [];
-      return res.ok;
-    } catch {
+      return true;
+    } catch (err) {
+      console.error(`Firebase submitScore error for "${game}":`, err);
       return false;
     }
   }
@@ -32,6 +37,10 @@ class FirebaseDB {
       const res = await fetch(
         `${this.scoresUrl}/${game}.json?orderBy="score"&limitToLast=${limit}`
       );
+      if (!res.ok) {
+        console.error(`Firebase getTopScores failed for "${game}": ${res.status} ${res.statusText}`);
+        return [];
+      }
       const data = await res.json();
       if (!data) return [];
       const list = Object.values(data)
@@ -39,7 +48,8 @@ class FirebaseDB {
         .slice(0, limit);
       this.cache[game] = list;
       return list;
-    } catch {
+    } catch (err) {
+      console.error(`Firebase getTopScores error for "${game}":`, err);
       return [];
     }
   }
